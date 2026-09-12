@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#f6efe4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Paige's Game Room" />
+  <meta name="description" content="Paige's ad-free offline game room." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Paige's Game Room</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button class="icon-button hidden" id="backButton" aria-label="Back to game room">←</button>
+      <div class="topbar-title" id="topbarTitle">Paige's Game Room</div>
+      <button class="icon-button" id="installButton" aria-label="Install app" title="Install app">＋</button>
+    </header>
+
+    <main id="screen" class="screen" aria-live="polite"></main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="celebration" class="celebration hidden" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
+    <div class="celebration-card">
+      <img src="./assets/victory-team.jpg" alt="Ryan, Link and Sketch celebrating Paige's win" class="celebration-art" />
+      <div class="celebration-copy">
+        <span class="eyebrow" id="celebrationEyebrow">NICE WORK</span>
+        <h2 id="celebrationTitle">You crushed it, Paige!</h2>
+        <p id="celebrationMessage">Ryan, Link and Sketch approve.</p>
+        <div class="celebration-stats" id="celebrationStats"></div>
+        <div class="button-row">
+          <button class="button primary" id="celebrationAgain">Play again</button>
+          <button class="button secondary" id="celebrationHome">Game room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

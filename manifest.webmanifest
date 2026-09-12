@@ -1,0 +1,15 @@
+{
+  "name": "Paige's Game Room",
+  "short_name": "Paige Games",
+  "description": "Ad-free Solitaire and Block Drop, built for Paige.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6efe4",
+  "theme_color": "#f6efe4",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}
