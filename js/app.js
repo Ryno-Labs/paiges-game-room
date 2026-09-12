@@ -13,9 +13,9 @@ const celebrationHome = document.querySelector('#celebrationHome');
 
 let currentCleanup = null;
 let currentReplay = null;
-let deferredInstallPrompt = null;
+let currentGameId = null;
 
-// ADD NEW GAMES HERE. Each game gets its own module and card metadata.
+// Add future games here. Each game stays isolated in its own module.
 export const GAME_REGISTRY = [
   {
     id: 'solitaire',
@@ -26,46 +26,77 @@ export const GAME_REGISTRY = [
     enabled: true
   },
   {
-    id: 'blockdrop',
+    id: 'tetris',
     title: 'Tetris',
-    subtitle: 'Classic falling blocks. Beat your high score.',
+    subtitle: 'Tap, swipe, stack, clear. Beat your best.',
     art: './assets/blockdrop-card.jpg',
     module: './games/blockdrop.js',
     enabled: true
   },
-  { id:'coming-1', title:'Next Game', subtitle:'Add anything Paige gets into next.', enabled:false },
-  { id:'coming-2', title:'Next Game', subtitle:'One more empty slot ready to go.', enabled:false }
+  { id: 'coming-1', title: 'Next Game', subtitle: 'Add anything Paige gets into next.', enabled: false },
+  { id: 'coming-2', title: 'Next Game', subtitle: 'Another game slot is ready whenever she wants it.', enabled: false }
 ];
 
-function escapeHtml(value='') {
+function escapeHtml(value = '') {
   return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 }
 
-function toast(message) {
+function storageApi() {
+  return {
+    get(key, fallback = null) {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    },
+    set(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+    },
+    remove(key) {
+      try { localStorage.removeItem(key); } catch {}
+    }
+  };
+}
+
+function isStandalone() {
+  return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function toast(message, ms = 2100) {
   toastEl.textContent = message;
   toastEl.classList.add('show');
   clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  toast._timer = setTimeout(() => toastEl.classList.remove('show'), ms);
 }
 
 function cleanupCurrent() {
   if (typeof currentCleanup === 'function') {
-    try { currentCleanup(); } catch (e) { console.warn(e); }
+    try { currentCleanup(); } catch (error) { console.warn(error); }
   }
   currentCleanup = null;
   currentReplay = null;
+  currentGameId = null;
+}
+
+function setChrome({ title, showBack, showInstall }) {
+  topbarTitle.textContent = title;
+  backButton.classList.toggle('hidden', !showBack);
+  installButton.classList.toggle('hidden', !showInstall || isStandalone());
 }
 
 function renderHome() {
   cleanupCurrent();
+  closeCelebration();
   history.replaceState(null, '', '#home');
-  topbarTitle.textContent = "Paige's Game Room";
-  backButton.classList.add('hidden');
+  setChrome({ title: "Paige's Game Room", showBack: false, showInstall: true });
+  screen.scrollTop = 0;
   screen.innerHTML = `
     <section class="home-hero" aria-label="Paige's Game Room">
       <div class="home-hero-copy">
         <span class="section-kicker">PAIGE'S PRIVATE ARCADE</span>
-        <p>Two games now. Zero ads forever. More games whenever you get bored.</p>
+        <p>Two games now. Zero ads forever. More whenever you get bored.</p>
       </div>
     </section>
     <section class="home-section">
@@ -73,103 +104,108 @@ function renderHome() {
       <h1 class="section-title">What are we playing?</h1>
       <div class="game-grid">
         ${GAME_REGISTRY.map(game => game.enabled ? `
-          <article class="game-card" role="button" tabindex="0" data-game="${escapeHtml(game.id)}" aria-label="Play ${escapeHtml(game.title)}">
-            <img class="game-art" src="${game.art}" alt="" />
-            <div class="game-card-body">
-              <h3>${escapeHtml(game.title)}</h3>
-              <p>${escapeHtml(game.subtitle)}</p>
+          <button class="game-card" type="button" data-game="${escapeHtml(game.id)}" aria-label="Play ${escapeHtml(game.title)}">
+            <img class="game-art" src="${game.art}" alt="" draggable="false" />
+            <span class="game-card-body">
+              <span role="heading" aria-level="2" class="game-card-heading">${escapeHtml(game.title)}</span>
+              <span class="game-card-description">${escapeHtml(game.subtitle)}</span>
               <span class="play-chip">Play →</span>
-            </div>
-          </article>
+            </span>
+          </button>
         ` : `
-          <div class="placeholder-card">
+          <div class="placeholder-card" aria-hidden="true">
             <div><strong>＋ More games</strong><br><small>${escapeHtml(game.subtitle)}</small></div>
           </div>
         `).join('')}
       </div>
     </section>
-    <div class="home-note">Built for Paige. Everything saves on this device, works offline after the first load, and never shows an ad.</div>
+    <div class="home-note">Built for Paige. It saves on this iPhone, works offline after the first load, and never shows an ad.</div>
   `;
 
   screen.querySelectorAll('[data-game]').forEach(card => {
-    const open = () => openGame(card.dataset.game);
-    card.addEventListener('click', open);
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+    card.addEventListener('click', () => openGame(card.dataset.game));
   });
 }
 
 async function openGame(id) {
-  const game = GAME_REGISTRY.find(g => g.id === id && g.enabled);
-  if (!game) return;
+  const game = GAME_REGISTRY.find(item => item.id === id && item.enabled);
+  if (!game || currentGameId === id) return;
   cleanupCurrent();
+  closeCelebration();
+  currentGameId = id;
   history.replaceState(null, '', `#${id}`);
-  topbarTitle.textContent = game.title;
-  backButton.classList.remove('hidden');
-  screen.innerHTML = '<div style="padding:40px;text-align:center;font-weight:900">Loading…</div>';
+  setChrome({ title: game.title, showBack: true, showInstall: false });
+  screen.scrollTop = 0;
+  screen.innerHTML = '<div style="padding:32px 18px;text-align:center;font-weight:900">Loading…</div>';
+
   try {
     const mod = await import(game.module);
-    const api = {
+    const result = await mod.mount({
       root: screen,
       toast,
       celebrate,
       goHome: renderHome,
-      storage: {
-        get(key, fallback=null) {
-          try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); } catch { return fallback; }
-        },
-        set(key, value) {
-          try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-        },
-        remove(key) { try { localStorage.removeItem(key); } catch {} }
-      }
-    };
-    const result = await mod.mount(api);
+      storage: storageApi()
+    });
     currentCleanup = result?.cleanup || null;
     currentReplay = result?.replay || null;
-  } catch (err) {
-    console.error(err);
-    screen.innerHTML = `<div style="padding:24px"><h2>That game hit a snag.</h2><p>${escapeHtml(err.message || 'Unknown error')}</p><button class="button" id="goHomeError">Game room</button></div>`;
-    document.querySelector('#goHomeError')?.addEventListener('click', renderHome);
+    requestAnimationFrame(() => { screen.scrollTop = 0; });
+  } catch (error) {
+    console.error(error);
+    currentGameId = null;
+    screen.innerHTML = `<div style="padding:22px"><h2>That game hit a snag.</h2><p>${escapeHtml(error?.message || 'Unknown error')}</p><button class="button" id="goHomeError" type="button">Game room</button></div>`;
+    screen.querySelector('#goHomeError')?.addEventListener('click', renderHome);
   }
 }
 
-function celebrate({ title='You crushed it, Paige!', eyebrow='NICE WORK', message='Ryan, Link and Sketch approve.', stats=[] } = {}) {
+function celebrate({ title = 'You crushed it, Paige!', eyebrow = 'NICE WORK', message = 'Ryan, Link and Sketch approve.', stats = [] } = {}) {
   celebrationTitle.textContent = title;
   celebrationEyebrow.textContent = eyebrow;
   celebrationMessage.textContent = message;
-  celebrationStats.innerHTML = stats.map(s => `<span>${escapeHtml(s)}</span>`).join('');
+  celebrationStats.innerHTML = stats.map(item => `<span>${escapeHtml(item)}</span>`).join('');
   celebration.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => celebrationAgain.focus({ preventScroll: true }));
 }
 
-function closeCelebration() { celebration.classList.add('hidden'); }
-celebrationAgain.addEventListener('click', () => { closeCelebration(); currentReplay?.(); });
-celebrationHome.addEventListener('click', () => { closeCelebration(); renderHome(); });
+function closeCelebration() {
+  celebration.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+celebrationAgain.addEventListener('click', () => {
+  closeCelebration();
+  currentReplay?.();
+});
+celebrationHome.addEventListener('click', () => {
+  closeCelebration();
+  renderHome();
+});
 backButton.addEventListener('click', renderHome);
 
-window.addEventListener('beforeinstallprompt', event => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  installButton.title = 'Install Paige\'s Game Room';
-});
-installButton.addEventListener('click', async () => {
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-  } else {
-    toast('On iPhone: Share → Add to Home Screen');
-  }
+installButton.addEventListener('click', () => {
+  toast('On iPhone: tap Share, then Add to Home Screen.', 3000);
 });
 
 window.addEventListener('hashchange', () => {
   const id = location.hash.replace('#','');
   if (!id || id === 'home') renderHome();
-  else if (GAME_REGISTRY.some(g => g.id === id && g.enabled)) openGame(id);
+  else if (GAME_REGISTRY.some(game => game.id === id && game.enabled)) openGame(id);
 });
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  let refreshingForUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || refreshingForUpdate) return;
+    refreshingForUpdate = true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+    .then(registration => registration.update().catch(() => {}))
+    .catch(error => console.warn('Service worker:', error));
 }
 
 const initial = location.hash.replace('#','');
-if (GAME_REGISTRY.some(g => g.id === initial && g.enabled)) openGame(initial); else renderHome();
+if (GAME_REGISTRY.some(game => game.id === initial && game.enabled)) openGame(initial);
+else renderHome();

@@ -1,72 +1,54 @@
 # Paige's Game Room
 
-A zero-backend, ad-free PWA with:
+A private, ad-free **iPhone-first PWA** built for Paige.
+
+## Included
 
 - Klondike Solitaire
-- Tetris-style falling blocks
-- Offline play after the first visit
-- Local high scores / Solitaire progress
+  - tap-to-move and drag-to-move
+  - double-tap exposed cards to move them to a foundation
+  - automatic card reveal
+  - undo, hints, saved game, timer, win stats
+- Tetris
+  - tap the board to rotate
+  - swipe sideways to move
+  - swipe down to drop
+  - large touch controls as a fallback
+  - 7-piece bag randomizer, landing ghost, lock delay, saved game and high score
 - Custom Paige home art
-- Ryan + Link + Sketch celebration screen
+- Ryan + Link + Sketch win/high-score screen
+- Offline play after the first successful load
 - No database, login, analytics, ads, API, or subscription
+
+This build intentionally targets **iPhone use**, not desktop or tablet. It uses iPhone safe-area insets, standalone PWA mode, portrait-first layout, Retina canvas rendering, touch/pointer controls, local saves, and iOS Home Screen metadata.
 
 ## Publish on GitHub Pages
 
-1. Create a new GitHub repository, for example `paiges-game-room`.
+1. Create a GitHub repository, for example `paiges-game-room`.
 2. Upload **everything in this folder to the repository root**.
 3. Commit to `main`.
-4. In GitHub open **Settings → Pages**.
+4. Open **Settings → Pages** in GitHub.
 5. Under **Build and deployment**, choose **Deploy from a branch**.
 6. Select `main` and `/ (root)`, then Save.
-7. GitHub will give you a URL similar to:
-   `https://YOUR-USERNAME.github.io/paiges-game-room/`
-8. Open that URL in Safari on Paige's iPhone.
-9. Tap **Share → Add to Home Screen**.
+7. Open the GitHub Pages URL in **Safari on Paige's iPhone**.
+8. Tap **Share → Add to Home Screen**.
 
-All URLs in the app are relative, so it works correctly when GitHub Pages hosts it inside a repository subfolder.
+All app URLs are relative, so GitHub Pages can host it inside a repository subfolder.
+
+## Updating an installed copy
+
+For meaningful code changes, change the cache name at the top of `sw.js`:
+
+```js
+const CACHE = 'paige-game-room-ios-v4';
+```
+
+The app checks for a new service worker and reloads when an update takes control. Paige's game progress and high scores stay in local storage on her iPhone.
 
 ## Privacy note
 
-If the GitHub repository is public, the custom artwork is also publicly accessible at the Pages URL. Use a private repo with a GitHub plan that supports private Pages, or use a private-repo-compatible static host, if that matters.
+If the GitHub repository/Pages site is public, the custom family artwork is publicly reachable at that URL. The game itself does not send gameplay data anywhere.
 
 ## Add another game later
 
-The app is deliberately modular.
-
-1. Add a file such as `js/games/freecell.js` that exports:
-
-```js
-export async function mount({ root, toast, celebrate, storage }) {
-  root.innerHTML = `<h1>FreeCell</h1>`;
-  return {
-    cleanup() {},
-    replay() {}
-  };
-}
-```
-
-2. In `js/app.js`, add an item to `GAME_REGISTRY`:
-
-```js
-{
-  id: 'freecell',
-  title: 'FreeCell',
-  subtitle: 'Every card is visible.',
-  art: './assets/freecell-card.jpg',
-  module: './games/freecell.js',
-  enabled: true
-}
-```
-
-3. Add the new module/image path to `ASSETS` in `sw.js`.
-4. Commit and push. GitHub Pages redeploys automatically.
-
-## Updating after install
-
-When you make a meaningful update, change the cache name in `sw.js`, for example:
-
-```js
-const CACHE = 'paige-game-room-v2';
-```
-
-That forces the installed PWA to refresh its offline files.
+See `ADD-A-GAME.md`. The shell is intentionally modular: add one game module, one registry entry, its artwork, and its cached file path.
