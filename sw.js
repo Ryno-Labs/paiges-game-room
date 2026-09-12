@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-ios-v3';
+const CACHE = 'paige-game-room-ios-v4';
 const APP_SHELL = [
   './',
   './index.html',
