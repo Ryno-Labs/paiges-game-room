@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Paige's Game Room",
   "short_name": "Paige's",
-  "description": "Paige's private, ad-free Solitaire and Tetris game room.",
+  "description": "Paige's private, ad-free Solitaire and Blocks game room.",
   "lang": "en-US",
   "start_url": "./#home",
   "scope": "./",

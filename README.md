@@ -1,75 +1,58 @@
-# Paige's Game Room
+# Paige's Game Room — Practical v8
 
-A private, ad-free **iPhone-first PWA** built for Paige.
+Private, ad-free, iPhone-first PWA for Paige. Built for GitHub Pages with no backend, account, API, subscription, or recurring hosting cost.
 
-## Included
+## Games
 
-- Klondike Solitaire
-  - tap-to-move and drag-to-move
-  - double-tap exposed cards to move them to a foundation
-  - automatic card reveal
-  - undo, hints, saved game, timer, win stats
-- Tetris
-  - tap the board to rotate
-  - swipe sideways to move
-  - swipe down to drop
-  - large touch controls as a fallback
-  - 7-piece bag randomizer, landing ghost, lock delay, saved game and high score
-- Custom Paige home art
-- Ryan + Link + Sketch win/high-score screen
-- Offline play after the first successful load
-- No database, login, analytics, ads, API, or subscription
+### Solitaire
 
-This build intentionally targets **iPhone use**, not desktop or tablet. It uses iPhone safe-area insets, standalone PWA mode, portrait-first layout, Retina canvas rendering, touch/pointer controls, local saves, and iOS Home Screen metadata.
+The old single-mode Klondike build has been replaced by a Solitaire hub with four experiences:
 
-## Publish on GitHub Pages
+- **Classic** — Draw 1, unlimited stock passes, undo and hints.
+- **Challenge** — Draw 3 with the same calm table and full recovery tools.
+- **Vegas** — $52 fake-money buy-in, +$5 for each foundation card, one stock pass, persistent Paige's Bankroll.
+- **Today's Deal** — a seeded Vegas deal that changes once per local calendar day.
 
-1. Create a GitHub repository, for example `paiges-game-room`.
-2. Upload **everything in this folder to the repository root**.
-3. Commit to `main`.
-4. Open **Settings → Pages** in GitHub.
-5. Under **Build and deployment**, choose **Deploy from a branch**.
-6. Select `main` and `/ (root)`, then Save.
-7. Open the GitHub Pages URL in **Safari on Paige's iPhone**.
-8. Tap **Share → Add to Home Screen**.
+Vegas bankroll changes happen when the hand happens: the buy-in is charged on the deal and foundation payouts are added immediately. Undo restores the bankroll with the card state. A Vegas hand can be ended before a full win and still finish profitably.
 
-All app URLs are relative, so GitHub Pages can host it inside a repository subfolder.
+Solitaire also includes auto-save, responsive portrait layout, large ranks/suits, tap-to-logical-move, drag for alternate destinations, undo, hints, safe auto-finish when the exposed position is deterministic enough, three table themes, stats by mode, and the Ryan/Link/Sketch celebration on a full clear.
 
-## Updating an installed copy
+### Paige's Blocks
 
-For meaningful code changes, change the cache name at the top of `sw.js`:
+The falling-block game has been replaced by a calm, original 8×8 placement puzzle.
 
-```js
-const CACHE = 'paige-game-room-ios-v7-touch';
-```
+- **Journey** — Chapter 1, "First Clears," with 10 finite levels.
+- **Endless** — no move limit; chase Paige's personal best until no piece fits.
 
-The app checks for a new service worker and reloads when an update takes control. Paige's game progress and high scores stay in local storage on her iPhone.
+Journey levels always show one primary goal, live progress, moves remaining, and combo. Each level can earn up to three medals: completion, efficient completion, and one bonus mastery goal. The tenth level is the chapter finale.
 
-## Privacy note
+Controls are iPhone-first: tap a piece and tap the board, or drag the piece onto the board. Undo, hints, auto-save, instant retry, and an undo-last-move rescue on failed Journey levels are built in.
 
-If the GitHub repository/Pages site is public, the custom family artwork is publicly reachable at that URL. The game itself does not send gameplay data anywhere.
+## Deploy to GitHub Pages
 
-## Add another game later
+1. Upload the contents of this folder to the existing GitHub repository.
+2. Keep the same GitHub Pages URL Paige already uses.
+3. GitHub Pages redeploys automatically.
+4. Paige's installed PWA checks for the update when opened or brought back to the foreground.
+5. If she is inside a game, the new service worker waits until she returns to the Game Room home screen before taking control.
 
-See `ADD-A-GAME.md`. The shell is intentionally modular: add one game module, one registry entry, its artwork, and its cached file path.
+Do not rename paths unless you also update `sw.js` and the registry in `js/app.js`.
 
+## iPhone notes
 
-## iPhone Tetris controls
+- Portrait-only product direction.
+- Uses real iOS safe areas; no fake/stamped status bar artwork.
+- Game boards are locked against page bounce while playing.
+- Home/mode screens can scroll normally on smaller iPhones.
+- Saved progress is local to Paige's iPhone/browser storage.
+- Works offline after the app shell has been cached once.
 
-Tetris is locked to one non-scrolling screen. Tap the board to rotate, drag left/right to move, drag down to soft-drop, and use a quick downward flick to hard-drop. The gesture locks to one axis to prevent diagonal thumb movement from making the piece jitter.
+## Main files
 
-## Updates
-
-The PWA checks GitHub Pages for updates when it opens and whenever it returns to the foreground. If a new version downloads while Solitaire or Tetris is active, it waits. The update is activated only after returning to the Game Room home screen, so gameplay is never interrupted.
-
-## iPhone touch tuning in v7
-
-- Solitaire ignores normal thumb wobble until the finger moves about 14 px.
-- Dragging back onto the source pile counts as selecting the card instead of a failed move.
-- Selection highlighting updates without rebuilding the full card board.
-- Drag previews move on the compositor with requestAnimationFrame instead of layout-heavy left/top changes.
-- Solitaire compresses card spacing to the actual remaining viewport height, so gameplay stays on one stable screen.
-- Tetris caches gesture geometry once per touch and only hard-drops on a deliberate fast downward flick.
-- Tetris canvas backing resolution now matches its actual rendered size and iPhone pixel density.
-- Core CSS/JS uses stale-while-revalidate so weak signal does not stall launch.
-- Offline install no longer fails because one optional artwork/icon file failed to cache.
+- `index.html` — PWA shell and celebration overlay.
+- `styles.css` — all iPhone layouts and game styling.
+- `js/app.js` — home screen, registry, navigation, safe updates.
+- `js/games/solitaire.js` — all four Solitaire modes and bankroll.
+- `js/games/blocks.js` — Journey and Endless block puzzle.
+- `sw.js` — offline caching and game-safe update activation.
+- `manifest.webmanifest` — install metadata and app icons.

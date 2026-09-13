@@ -1,56 +1,25 @@
-# Add another game
+# Add another game later
 
-Each game lives in its own JavaScript module. The home screen does not need to be rebuilt.
+Paige's Game Room is intentionally modular. Each game owns its own file under `js/games/`.
 
-## 1. Create the game module
+1. Create `js/games/mygame.js`.
+2. Export `mount({ root, toast, celebrate, goHome, storage })`.
+3. Render the game only inside `root`.
+4. Return `{ cleanup, replay }` from `mount`.
+5. Add one record to `GAME_REGISTRY` in `js/app.js`.
+6. Add the module path to `CORE_SHELL` in `sw.js` and bump the cache name.
 
-Example: `js/games/freecell.js`
-
-```js
-export async function mount({ root, toast, celebrate, storage }) {
-  root.innerHTML = `<section class="game-screen">Your game UI</section>`;
-
-  // toast('Message') shows a temporary native-feeling message.
-  // storage.get/set/remove keeps data locally on Paige's iPhone.
-  // celebrate({...}) opens the Ryan + Link + Sketch celebration screen.
-
-  return {
-    cleanup() {
-      // Stop timers and remove document/window listeners here.
-    },
-    replay() {
-      // Start a fresh game after a win screen.
-    }
-  };
-}
-```
-
-## 2. Register it
-
-Add one item to `GAME_REGISTRY` in `js/app.js`:
+Example registry record:
 
 ```js
 {
-  id: 'freecell',
-  title: 'FreeCell',
-  subtitle: 'Every card is visible.',
-  art: './assets/freecell-card.jpg',
-  module: './games/freecell.js',
+  id: 'word-game',
+  title: 'Word Game',
+  subtitle: 'A short description.',
+  art: './assets/word-game.jpg',
+  module: './games/word-game.js',
   enabled: true
 }
 ```
 
-## 3. Cache it for offline play
-
-Add these paths to `APP_SHELL` in `sw.js`:
-
-```js
-'./js/games/freecell.js',
-'./assets/freecell-card.jpg',
-```
-
-Then bump the cache version in `sw.js`, for example from `v3` to `v4`.
-
-## iPhone rules for future games
-
-Keep primary touch targets at least about 44px, use `env(safe-area-inset-*)` where controls reach screen edges, avoid hover-only interactions, pause gameplay when the app goes into the background, and save enough state to recover if iOS removes the PWA from memory.
+Keep future games iPhone-first: large touch targets, portrait layout, no fake phone status bar, auto-save, offline behavior, and no interaction that depends on hover or a physical keyboard.

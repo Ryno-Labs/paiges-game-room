@@ -20,17 +20,17 @@ export const GAME_REGISTRY = [
   {
     id: 'solitaire',
     title: 'Solitaire',
-    subtitle: 'Klondike. No ads. No coins. Just cards.',
+    subtitle: 'Classic, Challenge, Vegas and Paige’s Bankroll.',
     art: './assets/solitaire-card.jpg',
     module: './games/solitaire.js',
     enabled: true
   },
   {
-    id: 'tetris',
-    title: 'Tetris',
-    subtitle: 'Tap, swipe, stack, clear. Beat your best.',
-    art: './assets/blockdrop-card.jpg',
-    module: './games/blockdrop.js',
+    id: 'blocks',
+    title: "Paige's Blocks",
+    subtitle: 'A calm level journey with clear goals, plus Endless play.',
+    artType: 'blocks',
+    module: './games/blocks.js',
     enabled: true
   },
   { id: 'coming-1', title: 'Next Game', subtitle: 'Add anything Paige gets into next.', enabled: false },
@@ -105,7 +105,12 @@ function renderHome() {
       <div class="game-grid">
         ${GAME_REGISTRY.map(game => game.enabled ? `
           <button class="game-card" type="button" data-game="${escapeHtml(game.id)}" aria-label="Play ${escapeHtml(game.title)}">
-            <img class="game-art" src="${game.art}" alt="" draggable="false" />
+            ${game.artType === 'blocks' ? `
+              <span class="game-art blocks-home-art" aria-hidden="true">
+                <span class="mini-blocks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <strong>BLOCKS</strong>
+                <small>Journey · Endless</small>
+              </span>` : `<img class="game-art" src="${game.art}" alt="" draggable="false" />`}
             <span class="game-card-body">
               <span role="heading" aria-level="2" class="game-card-heading">${escapeHtml(game.title)}</span>
               <span class="game-card-description">${escapeHtml(game.subtitle)}</span>
@@ -162,11 +167,13 @@ async function openGame(id) {
   }
 }
 
-function celebrate({ title = 'You crushed it, Paige!', eyebrow = 'NICE WORK', message = 'Ryan, Link and Sketch approve.', stats = [] } = {}) {
+function celebrate({ title = 'You crushed it, Paige!', eyebrow = 'NICE WORK', message = 'Ryan, Link and Sketch approve.', stats = [], primaryLabel = 'Play again', secondaryLabel = 'Game room' } = {}) {
   celebrationTitle.textContent = title;
   celebrationEyebrow.textContent = eyebrow;
   celebrationMessage.textContent = message;
   celebrationStats.innerHTML = stats.map(item => `<span>${escapeHtml(item)}</span>`).join('');
+  celebrationAgain.textContent = primaryLabel;
+  celebrationHome.textContent = secondaryLabel;
   celebration.classList.remove('hidden');
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => celebrationAgain.focus({ preventScroll: true }));
@@ -267,7 +274,7 @@ if ('serviceWorker' in navigator) {
     .catch(error => console.warn('Service worker:', error));
 
   // iOS PWAs can stay suspended for a long time. Check when Paige returns,
-  // but never activate an update in the middle of Solitaire or Tetris.
+  // but never activate an update in the middle of Solitaire or Blocks.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') checkForServiceWorkerUpdate();
   });
