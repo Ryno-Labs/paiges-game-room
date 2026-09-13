@@ -57,3 +57,7 @@ See `ADD-A-GAME.md`. The shell is intentionally modular: add one game module, on
 ## iPhone Tetris controls
 
 Tetris is locked to one non-scrolling screen. Tap the board to rotate, drag left/right to move, drag down to soft-drop, and use a quick downward flick to hard-drop. The gesture locks to one axis to prevent diagonal thumb movement from making the piece jitter.
+
+## Updates
+
+The PWA checks GitHub Pages for updates when it opens and whenever it returns to the foreground. If a new version downloads while Solitaire or Tetris is active, it waits. The update is activated only after returning to the Game Room home screen, so gameplay is never interrupted.

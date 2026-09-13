@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-ios-v5-smooth';
+const CACHE = 'paige-game-room-ios-v6-safe-update';
 const APP_SHELL = [
   './',
   './index.html',
@@ -18,8 +18,13 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  // Do not skip waiting here. The page decides when it is safe to activate so
+  // an update can never reload the app in the middle of a game.
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {

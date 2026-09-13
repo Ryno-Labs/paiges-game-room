@@ -125,6 +125,10 @@ function renderHome() {
   screen.querySelectorAll('[data-game]').forEach(card => {
     card.addEventListener('click', () => openGame(card.dataset.game));
   });
+
+  // If an update finished downloading during a game, this is the safe moment
+  // to activate it. Paige never gets kicked out of active gameplay.
+  applyPendingServiceWorkerUpdate();
 }
 
 async function openGame(id) {
@@ -193,17 +197,82 @@ window.addEventListener('hashchange', () => {
   else if (GAME_REGISTRY.some(game => game.id === id && game.enabled)) openGame(id);
 });
 
+// Service-worker updates are intentionally game-safe on iPhone.
+// A new version may download while Paige is playing, but it will not take
+// control (or reload the PWA) until she is back on the Game Room home screen.
+let serviceWorkerRegistration = null;
+let pendingServiceWorker = null;
+let updateReloadArmed = false;
+let updateCheckInFlight = false;
+
+function canApplyServiceWorkerUpdate() {
+  return currentGameId === null;
+}
+
+function applyPendingServiceWorkerUpdate() {
+  if (!pendingServiceWorker || !canApplyServiceWorkerUpdate() || updateReloadArmed) return;
+  updateReloadArmed = true;
+  pendingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+}
+
+function queueServiceWorkerUpdate(worker) {
+  if (!worker) return;
+  pendingServiceWorker = worker;
+  applyPendingServiceWorkerUpdate();
+}
+
+async function checkForServiceWorkerUpdate() {
+  if (!serviceWorkerRegistration || updateCheckInFlight || !navigator.onLine) return;
+  updateCheckInFlight = true;
+  try {
+    await serviceWorkerRegistration.update();
+  } catch (error) {
+    // Offline/transient update failures should never affect gameplay.
+    console.debug('Service worker update check skipped:', error);
+  } finally {
+    updateCheckInFlight = false;
+  }
+}
+
 if ('serviceWorker' in navigator) {
-  const hadController = Boolean(navigator.serviceWorker.controller);
-  let refreshingForUpdate = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || refreshingForUpdate) return;
-    refreshingForUpdate = true;
+    if (!updateReloadArmed) return;
+    // The new worker only reaches this point from the home screen. Reload once
+    // so the newest app shell/code is used immediately.
+    updateReloadArmed = false;
     location.reload();
   });
+
   navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
-    .then(registration => registration.update().catch(() => {}))
+    .then(registration => {
+      serviceWorkerRegistration = registration;
+
+      // A worker may already be waiting from an earlier launch.
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        queueServiceWorkerUpdate(registration.waiting);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            queueServiceWorkerUpdate(worker);
+          }
+        });
+      });
+
+      checkForServiceWorkerUpdate();
+    })
     .catch(error => console.warn('Service worker:', error));
+
+  // iOS PWAs can stay suspended for a long time. Check when Paige returns,
+  // but never activate an update in the middle of Solitaire or Tetris.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForServiceWorkerUpdate();
+  });
+  window.addEventListener('pageshow', checkForServiceWorkerUpdate);
+  window.addEventListener('online', checkForServiceWorkerUpdate);
 }
 
 const initial = location.hash.replace('#','');
