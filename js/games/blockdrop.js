@@ -123,17 +123,20 @@ export async function mount({ root, toast, celebrate, storage }) {
   const pauseBtn = root.querySelector('#bdPause');
   const newBtn = root.querySelector('#bdNew');
 
-  // 2x is plenty sharp on an iPhone and avoids pushing a 900×1800 canvas every frame.
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = Math.round(BOARD_W * dpr);
-  canvas.height = Math.round(BOARD_H * dpr);
-  nextCanvas.width = Math.round(NEXT_W * dpr);
-  nextCanvas.height = Math.round(NEXT_H * dpr);
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
   const ctx = canvas.getContext('2d');
   const nctx = nextCanvas.getContext('2d');
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const cell = BOARD_W / COLS;
+
+  function sizeBackingStore(target, context, logicalWidth, logicalHeight, cssWidth, cssHeight) {
+    const pixelWidth = Math.max(1, Math.round(cssWidth * dpr));
+    const pixelHeight = Math.max(1, Math.round(cssHeight * dpr));
+    if (target.width !== pixelWidth || target.height !== pixelHeight) {
+      target.width = pixelWidth;
+      target.height = pixelHeight;
+    }
+    context.setTransform(pixelWidth / logicalWidth, 0, 0, pixelHeight / logicalHeight, 0, 0);
+  }
   let resizeRaf = 0;
   let resizeObserver = null;
 
@@ -150,8 +153,15 @@ export async function mount({ root, toast, celebrate, storage }) {
       const widthByLayout = rect.width - sideWidth - gap;
       const widthByHeight = rect.height / 2;
       const cssWidth = Math.max(118, Math.floor(Math.min(widthByLayout, widthByHeight)));
+      const cssHeight = cssWidth * 2;
       canvas.style.width = `${cssWidth}px`;
-      canvas.style.height = `${cssWidth * 2}px`;
+      canvas.style.height = `${cssHeight}px`;
+      sizeBackingStore(canvas, ctx, BOARD_W, BOARD_H, cssWidth, cssHeight);
+
+      const nextRect = nextCanvas.getBoundingClientRect();
+      const nextCssWidth = Math.max(1, nextRect.width || sideWidth - 12);
+      sizeBackingStore(nextCanvas, nctx, NEXT_W, NEXT_H, nextCssWidth, nextCssWidth);
+      drawNext();
       dirty = true;
     });
   }
@@ -559,6 +569,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     if (!running || gameOver) return;
     event.preventDefault();
     canvas.setPointerCapture?.(event.pointerId);
+    const rect = canvas.getBoundingClientRect();
     gesture = {
       id: event.pointerId,
       startX: event.clientX,
@@ -567,7 +578,8 @@ export async function mount({ root, toast, celebrate, storage }) {
       anchorY: event.clientY,
       startTime: performance.now(),
       axis: null,
-      moved: false
+      moved: false,
+      cellPx: Math.max(1, rect.width / COLS)
     };
   }
 
@@ -590,8 +602,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     }
 
     if (!gesture.axis) return;
-    const rect = canvas.getBoundingClientRect();
-    const cellPx = rect.width / COLS;
+    const cellPx = gesture.cellPx;
 
     if (gesture.axis === 'x') {
       const step = Math.max(24, cellPx * .92);
@@ -620,6 +631,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     const distance = Math.hypot(totalX, totalY);
     const duration = Math.max(1, performance.now() - gesture.startTime);
     const axis = gesture.axis;
+    const gestureCellPx = gesture.cellPx;
     gesture = null;
     if (!running || gameOver) return;
 
@@ -632,7 +644,8 @@ export async function mount({ root, toast, celebrate, storage }) {
     // Only a deliberate fast downward flick hard-drops. A normal downward
     // drag simply soft-drops row by row and stops exactly where the thumb stops.
     const velocityY = totalY / duration;
-    if (axis === 'y' && totalY > 72 && velocityY > .42) hardDrop();
+    const flickDistance = Math.max(84, gestureCellPx * 2.8);
+    if (axis === 'y' && totalY > flickDistance && duration < 240 && velocityY > .62) hardDrop();
   }
 
   function onCanvasPointerCancel(event) {

@@ -101,6 +101,10 @@ export async function mount({ root, toast, celebrate, storage }) {
   let lastTap = { key: '', at: 0 };
   let suppressClickUntil = 0;
   let drag = null;
+  let layoutRaf = 0;
+  let resizeObserver = null;
+
+  root.classList.add('solitaire-active');
 
   root.innerHTML = `
     <section class="game-screen solitaire-screen">
@@ -182,12 +186,61 @@ export async function mount({ root, toast, celebrate, storage }) {
     return source === 'waste' ? 'selected' : '';
   }
 
-  function faceUpGap() {
-    const maxCards = Math.max(...state.tableau.map(col => col.length), 1);
-    const h = window.innerHeight || 780;
-    if (h <= 680 || maxCards >= 16) return 21;
-    if (h <= 760 || maxCards >= 14) return 23;
-    return 26;
+  function syncSelectionClasses() {
+    topEl.querySelectorAll('.playing-card.selected').forEach(el => el.classList.remove('selected'));
+    tabEl.querySelectorAll('.playing-card.selected').forEach(el => el.classList.remove('selected'));
+    if (!selected) return;
+
+    if (selected.source === 'waste') {
+      topEl.querySelector('[data-waste] .playing-card')?.classList.add('selected');
+      return;
+    }
+    if (selected.source === 'foundation') {
+      topEl.querySelector(`[data-foundation="${selected.suit}"] .playing-card`)?.classList.add('selected');
+      return;
+    }
+    if (selected.source === 'tableau') {
+      for (let i = selected.index; i < state.tableau[selected.col].length; i++) {
+        tabEl.querySelector(`[data-tableau-card="${selected.col}:${i}"] .playing-card`)?.classList.add('selected');
+      }
+    }
+  }
+
+  function fitSolitaireLayout() {
+    cancelAnimationFrame(layoutRaf);
+    layoutRaf = requestAnimationFrame(() => {
+      const card = tabEl.querySelector('.playing-card');
+      if (!card || !tabEl.clientHeight) return;
+
+      const cardHeight = card.getBoundingClientRect().height;
+      const hiddenGap = 13;
+      const available = Math.max(cardHeight, tabEl.clientHeight - 2);
+      let bestGap = 28;
+
+      state.tableau.forEach(col => {
+        if (col.length <= 1) return;
+        let hiddenBeforeLast = 0;
+        let faceUpBeforeLast = 0;
+        for (let i = 0; i < col.length - 1; i++) {
+          if (col[i].faceUp) faceUpBeforeLast += 1;
+          else hiddenBeforeLast += 1;
+        }
+        if (faceUpBeforeLast > 0) {
+          const allowed = (available - cardHeight - hiddenBeforeLast * hiddenGap) / faceUpBeforeLast;
+          bestGap = Math.min(bestGap, allowed);
+        }
+      });
+
+      const upGap = Math.max(12, Math.min(28, Math.floor(bestGap)));
+      state.tableau.forEach((col, colIndex) => {
+        let y = 0;
+        col.forEach((cardData, index) => {
+          const wrapper = tabEl.querySelector(`[data-tableau-card="${colIndex}:${index}"]`);
+          if (wrapper) wrapper.style.top = `${Math.round(y)}px`;
+          if (index < col.length - 1) y += cardData.faceUp ? upGap : hiddenGap;
+        });
+      });
+    });
   }
 
   function render() {
@@ -206,16 +259,13 @@ export async function mount({ root, toast, celebrate, storage }) {
     }).join('');
     topEl.innerHTML = `<div data-stock aria-label="Draw from deck">${stock}</div><div data-waste aria-label="Waste pile">${waste}</div>${foundations}`;
 
-    const upGap = faceUpGap();
     tabEl.innerHTML = state.tableau.map((col, colIndex) => {
-      let y = 0;
-      const cards = col.map((card, index) => {
-        const top = y;
-        y += card.faceUp ? upGap : 14;
-        return `<div data-tableau-card="${colIndex}:${index}" style="top:${top}px">${cardHtml(card, selectedClass('tableau', colIndex, index))}</div>`;
-      }).join('');
-      return `<div class="tableau-col" data-tableau="${colIndex}" style="min-height:${Math.max(350, y + 86)}px">${cards}</div>`;
+      const cards = col.map((card, index) =>
+        `<div data-tableau-card="${colIndex}:${index}" style="top:0">${cardHtml(card, selectedClass('tableau', colIndex, index))}</div>`
+      ).join('');
+      return `<div class="tableau-col" data-tableau="${colIndex}">${cards}</div>`;
     }).join('');
+    fitSolitaireLayout();
   }
 
   function getSelectedCard() {
@@ -321,7 +371,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     const card = getSelectedCard();
     if (card && tryMoveToFoundation(card.suit)) return true;
     selected = null;
-    render();
+    syncSelectionClasses();
     invalidMove();
     return false;
   }
@@ -419,7 +469,7 @@ export async function mount({ root, toast, celebrate, storage }) {
       } else {
         selected = null;
       }
-      render();
+      syncSelectionClasses();
       return;
     }
 
@@ -427,7 +477,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     if (waste) {
       if (state.waste.length) selected = selected?.source === 'waste' ? null : { source: 'waste' };
       else selected = null;
-      render();
+      syncSelectionClasses();
       return;
     }
 
@@ -440,7 +490,7 @@ export async function mount({ root, toast, celebrate, storage }) {
       const sameSelected = cardWrap && selected.source === 'tableau' && cardWrap.dataset.tableauCard === `${selected.col}:${selected.index}`;
       if (sameSelected) {
         selected = null;
-        render();
+        syncSelectionClasses();
         return;
       }
       if (tryMoveToTableau(colIndex)) return;
@@ -467,7 +517,7 @@ export async function mount({ root, toast, celebrate, storage }) {
 
     const run = state.tableau[col].slice(index);
     selected = validRun(run) ? { source: 'tableau', col, index } : null;
-    render();
+    syncSelectionClasses();
   }
 
   function canMoveCardToAnyTableau(card, fromCol = null) {
@@ -561,14 +611,24 @@ export async function mount({ root, toast, celebrate, storage }) {
       preview.appendChild(cardEl);
     });
     document.body.appendChild(preview);
-    moveDragPreview(preview, x, y);
+    placeDragPreview(preview, x, y);
     return preview;
   }
 
-  function moveDragPreview(preview, x, y) {
+  function placeDragPreview(preview, x, y) {
     if (!preview) return;
-    preview.style.left = `${x}px`;
-    preview.style.top = `${y}px`;
+    preview.style.transform = `translate3d(${Math.round(x)}px,${Math.round(y)}px,0) translate(-50%,-22%)`;
+  }
+
+  function scheduleDragPreview(dragState, x, y) {
+    if (!dragState?.preview) return;
+    dragState.previewX = x;
+    dragState.previewY = y;
+    if (dragState.previewRaf) return;
+    dragState.previewRaf = requestAnimationFrame(() => {
+      dragState.previewRaf = 0;
+      placeDragPreview(dragState.preview, dragState.previewX, dragState.previewY);
+    });
   }
 
   function markDragSource(ref, active) {
@@ -604,7 +664,10 @@ export async function mount({ root, toast, celebrate, storage }) {
       x: event.clientX,
       y: event.clientY,
       dragging: false,
-      preview: null
+      preview: null,
+      previewRaf: 0,
+      previewX: event.clientX,
+      previewY: event.clientY
     };
   }
 
@@ -613,16 +676,25 @@ export async function mount({ root, toast, celebrate, storage }) {
     drag.x = event.clientX;
     drag.y = event.clientY;
     const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
-    if (!drag.dragging && distance >= 8) {
+    if (!drag.dragging && distance >= 14) {
       drag.dragging = true;
       selected = drag.ref;
+      syncSelectionClasses();
       markDragSource(drag.ref, true);
       drag.preview = createDragPreview(drag.ref, drag.sourceElement, event.clientX, event.clientY);
     }
     if (drag.dragging) {
       event.preventDefault();
-      moveDragPreview(drag.preview, event.clientX, event.clientY);
+      scheduleDragPreview(drag, event.clientX, event.clientY);
     }
+  }
+
+  function droppedOnSource(ref, target) {
+    if (!ref || !target) return false;
+    if (ref.source === 'waste') return Boolean(target.closest?.('[data-waste]'));
+    if (ref.source === 'foundation') return target.closest?.('[data-foundation]')?.dataset.foundation === ref.suit;
+    if (ref.source === 'tableau') return Number(target.closest?.('[data-tableau]')?.dataset.tableau) === ref.col;
+    return false;
   }
 
   function finishDrag(event, cancelled = false) {
@@ -631,24 +703,39 @@ export async function mount({ root, toast, celebrate, storage }) {
     drag = null;
 
     if (currentDrag.dragging) {
-      suppressClickUntil = Date.now() + 380;
+      suppressClickUntil = Date.now() + 70;
+      if (currentDrag.previewRaf) cancelAnimationFrame(currentDrag.previewRaf);
       markDragSource(currentDrag.ref, false);
       currentDrag.preview?.remove();
       selected = currentDrag.ref;
 
       let moved = false;
+      let sourceDrop = false;
       if (!cancelled) {
         const target = document.elementFromPoint(event.clientX, event.clientY);
-        const foundation = target?.closest?.('[data-foundation]');
-        const tableau = target?.closest?.('[data-tableau]');
-        if (foundation) moved = tryMoveToFoundation(foundation.dataset.foundation);
-        else if (tableau) moved = tryMoveToTableau(Number(tableau.dataset.tableau));
+        sourceDrop = droppedOnSource(currentDrag.ref, target);
+        if (!sourceDrop) {
+          const foundation = target?.closest?.('[data-foundation]');
+          const tableau = target?.closest?.('[data-tableau]');
+          if (foundation) moved = tryMoveToFoundation(foundation.dataset.foundation);
+          else if (tableau) moved = tryMoveToTableau(Number(tableau.dataset.tableau));
+        }
       }
 
       if (!moved) {
-        selected = null;
-        render();
-        if (!cancelled) invalidMove();
+        if (cancelled) {
+          selected = null;
+          syncSelectionClasses();
+        } else if (sourceDrop) {
+          // A slightly sloppy tap/drag back onto the same pile is a selection,
+          // not a failed move. This makes thumb input feel forgiving on iPhone.
+          selected = currentDrag.ref;
+          syncSelectionClasses();
+        } else {
+          selected = null;
+          syncSelectionClasses();
+          invalidMove();
+        }
       }
     }
   }
@@ -661,6 +748,11 @@ export async function mount({ root, toast, celebrate, storage }) {
     else if (!state.won) state.startedAt = Date.now();
   }
   function handlePageHide() { save(); }
+
+  resizeObserver = new ResizeObserver(fitSolitaireLayout);
+  resizeObserver.observe(boardEl);
+  window.addEventListener('resize', fitSolitaireLayout, { passive: true });
+  window.visualViewport?.addEventListener('resize', fitSolitaireLayout, { passive: true });
 
   topEl.addEventListener('click', onClick);
   tabEl.addEventListener('click', onClick);
@@ -695,8 +787,14 @@ export async function mount({ root, toast, celebrate, storage }) {
       document.removeEventListener('pointercancel', onPointerCancel);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('resize', fitSolitaireLayout);
+      window.visualViewport?.removeEventListener('resize', fitSolitaireLayout);
+      resizeObserver?.disconnect();
+      cancelAnimationFrame(layoutRaf);
+      if (drag?.previewRaf) cancelAnimationFrame(drag.previewRaf);
       drag?.preview?.remove();
       drag = null;
+      root.classList.remove('solitaire-active');
     },
     replay() { startFresh(); }
   };

@@ -58,9 +58,7 @@ img { -webkit-user-drag: none; user-select: none; }
   grid-template-columns: 46px minmax(0,1fr) 46px;
   align-items: center;
   z-index: 30;
-  background: rgba(246,239,228,.96);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-  backdrop-filter: blur(18px) saturate(1.1);
+  background: var(--paper);
   border-bottom: 1px solid rgba(23,23,23,.12);
 }
 .topbar-title {
@@ -179,21 +177,47 @@ img { -webkit-user-drag: none; user-select: none; }
 .button.small { min-height: 40px; padding: 7px 9px; font-size: 12px; }
 .button.iconish { min-width: 44px; padding-inline: 9px; }
 
-/* Solitaire */
-.solitaire-screen { display: flex; flex-direction: column; }
-.solitaire-wrap { padding: 0 7px 12px; overflow: visible; }
+/* Solitaire — iPhone-only, fixed to the available viewport */
+.screen.solitaire-active {
+  overflow: hidden;
+  overscroll-behavior: none;
+  padding-bottom: 0;
+}
+.solitaire-screen {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.solitaire-screen .game-toolbar { flex: 0 0 auto; }
+.solitaire-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 7px max(7px, env(safe-area-inset-bottom));
+  overflow: hidden;
+}
 .solitaire-board {
+  height: 100%;
+  min-height: 0;
   border: var(--line);
   border-radius: 18px;
   background: linear-gradient(#397852,#2d6544);
   padding: 7px;
-  min-height: calc(100svh - var(--topbar-height) - env(safe-area-inset-top) - 62px - env(safe-area-inset-bottom));
   box-shadow: var(--shadow);
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
+  display: flex;
+  flex-direction: column;
 }
-.sol-top { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 3px; align-items: start; }
+.sol-top {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(6,minmax(0,1fr));
+  gap: 3px;
+  align-items: start;
+}
 .slot, .playing-card { width: 100%; aspect-ratio: .7; border-radius: 6px; }
 .slot { position: relative; display: grid; place-items: center; border: 1.5px solid rgba(255,255,255,.58); color: rgba(255,255,255,.66); font-size: clamp(16px,5vw,27px); }
 .playing-card {
@@ -215,14 +239,30 @@ img { -webkit-user-drag: none; user-select: none; }
 .playing-card .big-suit { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(20px,7vw,38px); opacity: .92; }
 .playing-card.back { background: repeating-linear-gradient(45deg,#d45d74 0 6px,#f5d2db 6px 10px); }
 .playing-card.back::after { content: "P"; display: grid; place-items: center; position: absolute; inset: 8%; border: 1.5px solid rgba(255,255,255,.85); border-radius: 5px; color: white; font-weight: 1000; font-size: clamp(14px,5vw,27px); text-shadow: 0 1px #9c3f53; }
-.tableau { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 2px; margin-top: 10px; }
-.tableau-col { position: relative; min-height: 350px; border-radius: 8px; }
+.tableau {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7,minmax(0,1fr));
+  gap: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.tableau-col { position: relative; height: 100%; min-height: 0; border-radius: 8px; }
 .tableau-col::before { content: ""; position: absolute; inset: 0 auto auto 0; width: 100%; aspect-ratio: .7; border: 1.5px dashed rgba(255,255,255,.24); border-radius: 6px; }
 .tableau-col > [data-tableau-card] { position: absolute; left: 0; right: 0; width: 100%; }
-.sol-help { margin: 9px 2px 0; color: #ecf5ef; font-size: 11px; line-height: 1.3; opacity: .9; }
-.solitaire-board.invalid { animation: boardNudge .17s ease-in-out; }
-@keyframes boardNudge { 0%,100%{ transform:translateX(0) } 35%{ transform:translateX(-3px) } 70%{ transform:translateX(3px) } }
-.drag-preview { position: fixed; z-index: 500; pointer-events: none; transform: translate(-50%,-22%); filter: drop-shadow(0 8px 9px rgba(0,0,0,.28)); }
+.sol-help { flex: 0 0 auto; margin: 6px 2px 0; color: #ecf5ef; font-size: 10px; line-height: 1.2; opacity: .88; }
+.solitaire-board.invalid { animation: boardNudge .14s ease-in-out; }
+@keyframes boardNudge { 0%,100%{ transform:translateX(0) } 35%{ transform:translateX(-2px) } 70%{ transform:translateX(2px) } }
+.drag-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 500;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 6px 7px rgba(0,0,0,.24));
+}
 .drag-preview .playing-card { position: absolute; left: 0; top: 0; width: 100%; }
 
 /* Tetris — iPhone-only, locked to one stable screen */

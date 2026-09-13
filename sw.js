@@ -1,12 +1,16 @@
-const CACHE = 'paige-game-room-ios-v6-safe-update';
-const APP_SHELL = [
+const CACHE = 'paige-game-room-ios-v7-touch';
+
+const CORE_SHELL = [
   './',
   './index.html',
   './styles.css',
   './manifest.webmanifest',
   './js/app.js',
   './js/games/solitaire.js',
-  './js/games/blockdrop.js',
+  './js/games/blockdrop.js'
+];
+
+const OPTIONAL_ASSETS = [
   './assets/paige-hero.jpg',
   './assets/victory-team.jpg',
   './assets/solitaire-card.jpg',
@@ -17,10 +21,28 @@ const APP_SHELL = [
   './assets/favicon-32.png'
 ];
 
+async function cacheOne(cache, url, required = false) {
+  try {
+    const response = await fetch(url, { cache: 'reload' });
+    if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+    await cache.put(url, response);
+    return true;
+  } catch (error) {
+    if (required) throw error;
+    console.warn('Optional offline asset was not cached:', url, error);
+    return false;
+  }
+}
+
 self.addEventListener('install', event => {
-  // Do not skip waiting here. The page decides when it is safe to activate so
-  // an update can never reload the app in the middle of a game.
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
+  // Keep the current worker in control until the app says Paige is safely home.
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // Core code is required. Decorative artwork/icons are cached independently
+    // so one missing optional file cannot break the entire PWA install.
+    await Promise.all(CORE_SHELL.map(url => cacheOne(cache, url, true)));
+    await Promise.allSettled(OPTIONAL_ASSETS.map(url => cacheOne(cache, url, false)));
+  })());
 });
 
 self.addEventListener('message', event => {
@@ -35,15 +57,37 @@ self.addEventListener('activate', event => {
   );
 });
 
-async function networkFirst(request, fallback) {
+async function staleWhileRevalidate(request, fallbackUrl) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request) || (fallbackUrl ? await cache.match(fallbackUrl) : null);
+
+  const network = fetch(request)
+    .then(async response => {
+      if (response.ok) await cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    // Refresh in the background without holding up launch or gameplay.
+    void network;
+    return cached;
+  }
+
+  const response = await network;
+  return response || new Response('Offline', { status: 503, statusText: 'Offline' });
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
   try {
     const response = await fetch(request);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const cache = await caches.open(CACHE);
-    cache.put(request, response.clone());
+    if (response.ok) await cache.put(request, response.clone());
     return response;
   } catch {
-    return (await caches.match(request)) || (fallback ? await caches.match(fallback) : undefined);
+    return new Response('Offline', { status: 503, statusText: 'Offline' });
   }
 }
 
@@ -53,26 +97,18 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html'));
+    event.respondWith(staleWhileRevalidate(event.request, './index.html'));
     return;
   }
 
-  const isCode = event.request.destination === 'script' || event.request.destination === 'style' || url.pathname.endsWith('.webmanifest');
+  const isCode = event.request.destination === 'script' ||
+    event.request.destination === 'style' ||
+    url.pathname.endsWith('.webmanifest');
+
   if (isCode) {
-    event.respondWith(networkFirst(event.request));
+    event.respondWith(staleWhileRevalidate(event.request));
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(event.request, copy));
-        }
-        return response;
-      });
-    })
-  );
+  event.respondWith(cacheFirst(event.request));
 });

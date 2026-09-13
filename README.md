@@ -40,7 +40,7 @@ All app URLs are relative, so GitHub Pages can host it inside a repository subfo
 For meaningful code changes, change the cache name at the top of `sw.js`:
 
 ```js
-const CACHE = 'paige-game-room-ios-v4';
+const CACHE = 'paige-game-room-ios-v7-touch';
 ```
 
 The app checks for a new service worker and reloads when an update takes control. Paige's game progress and high scores stay in local storage on her iPhone.
@@ -61,3 +61,15 @@ Tetris is locked to one non-scrolling screen. Tap the board to rotate, drag left
 ## Updates
 
 The PWA checks GitHub Pages for updates when it opens and whenever it returns to the foreground. If a new version downloads while Solitaire or Tetris is active, it waits. The update is activated only after returning to the Game Room home screen, so gameplay is never interrupted.
+
+## iPhone touch tuning in v7
+
+- Solitaire ignores normal thumb wobble until the finger moves about 14 px.
+- Dragging back onto the source pile counts as selecting the card instead of a failed move.
+- Selection highlighting updates without rebuilding the full card board.
+- Drag previews move on the compositor with requestAnimationFrame instead of layout-heavy left/top changes.
+- Solitaire compresses card spacing to the actual remaining viewport height, so gameplay stays on one stable screen.
+- Tetris caches gesture geometry once per touch and only hard-drops on a deliberate fast downward flick.
+- Tetris canvas backing resolution now matches its actual rendered size and iPhone pixel density.
+- Core CSS/JS uses stale-while-revalidate so weak signal does not stall launch.
+- Offline install no longer fails because one optional artwork/icon file failed to cache.
