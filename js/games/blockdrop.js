@@ -67,6 +67,7 @@ export async function mount({ root, toast, celebrate, storage }) {
   let gesture = null;
   let repeatTimer = null;
   let repeatDelay = null;
+  let dirty = true;
   const storedHigh = storage.get(HIGH_KEY, null);
   const legacyHigh = Number(storage.get(OLD_HIGH_KEY, 0)) || 0;
   let high = Math.max(0, Number(storedHigh ?? legacyHigh) || 0);
@@ -109,8 +110,12 @@ export async function mount({ root, toast, celebrate, storage }) {
       </div>
     </section>`;
 
+  root.classList.add('tetris-active');
+
   const canvas = root.querySelector('#blockCanvas');
   const nextCanvas = root.querySelector('#nextCanvas');
+  const layout = root.querySelector('.blockdrop-layout');
+  const sidePanel = root.querySelector('.block-side');
   const scoreEl = root.querySelector('#bdScore');
   const highEl = root.querySelector('#bdHigh');
   const linesEl = root.querySelector('#bdLines');
@@ -118,7 +123,8 @@ export async function mount({ root, toast, celebrate, storage }) {
   const pauseBtn = root.querySelector('#bdPause');
   const newBtn = root.querySelector('#bdNew');
 
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  // 2x is plenty sharp on an iPhone and avoids pushing a 900×1800 canvas every frame.
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = Math.round(BOARD_W * dpr);
   canvas.height = Math.round(BOARD_H * dpr);
   nextCanvas.width = Math.round(NEXT_W * dpr);
@@ -128,6 +134,27 @@ export async function mount({ root, toast, celebrate, storage }) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const cell = BOARD_W / COLS;
+  let resizeRaf = 0;
+  let resizeObserver = null;
+
+  // Keep the board physically locked inside the remaining iPhone viewport.
+  // This prevents the page from becoming scrollable as Safari/PWA chrome changes.
+  function fitBoard() {
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      const rect = layout.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const sideWidth = sidePanel.getBoundingClientRect().width || 62;
+      const styles = getComputedStyle(layout);
+      const gap = parseFloat(styles.columnGap || styles.gap) || 6;
+      const widthByLayout = rect.width - sideWidth - gap;
+      const widthByHeight = rect.height / 2;
+      const cssWidth = Math.max(118, Math.floor(Math.min(widthByLayout, widthByHeight)));
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssWidth * 2}px`;
+      dirty = true;
+    });
+  }
 
   function refillBag() { bag = shuffle([...TYPES]); }
   function takeType() {
@@ -240,6 +267,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     if (!running || gameOver || !current) return false;
     if (!collides(current.matrix, current.x, current.y + 1)) {
       current.y += 1;
+      dirty = true;
       resetLockDelay(now);
       return true;
     }
@@ -251,6 +279,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     if (!running || gameOver || !current) return;
     if (!collides(current.matrix, current.x, current.y + 1)) {
       current.y += 1;
+      dirty = true;
       score += 1;
       updateStats();
       resetLockDelay();
@@ -267,6 +296,7 @@ export async function mount({ root, toast, celebrate, storage }) {
       distance += 1;
     }
     score += distance * 2;
+    dirty = true;
     updateStats();
     lockPiece();
   }
@@ -275,6 +305,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     if (!running || gameOver || !current) return false;
     if (collides(current.matrix, current.x + dx, current.y)) return false;
     current.x += dx;
+    dirty = true;
     resetLockDelay();
     return true;
   }
@@ -286,6 +317,7 @@ export async function mount({ root, toast, celebrate, storage }) {
       if (!collides(rotated, current.x + kick, current.y)) {
         current.matrix = rotated;
         current.x += kick;
+        dirty = true;
         resetLockDelay();
         return true;
       }
@@ -301,6 +333,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     }
     clearLines();
     spawn();
+    dirty = true;
     saveState();
   }
 
@@ -325,7 +358,9 @@ export async function mount({ root, toast, celebrate, storage }) {
     storage.remove(STATE_KEY);
     pauseBtn.textContent = 'Pause';
     updateStats();
+    dirty = true;
     draw();
+    dirty = false;
 
     if (score > previousHigh && score > 0) {
       celebrate({
@@ -356,6 +391,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     pauseBtn.textContent = 'Pause';
     updateStats();
     spawn();
+    dirty = true;
     saveState();
   }
 
@@ -378,6 +414,7 @@ export async function mount({ root, toast, celebrate, storage }) {
     running = !running;
     groundedAt = null;
     pauseBtn.textContent = running ? 'Pause' : 'Resume';
+    dirty = true;
     if (running) {
       last = performance.now();
       dropAcc = 0;
@@ -483,7 +520,10 @@ export async function mount({ root, toast, celebrate, storage }) {
       }
       if (groundedAt != null && now - groundedAt >= LOCK_DELAY) lockPiece();
     }
-    draw();
+    if (dirty) {
+      draw();
+      dirty = false;
+    }
     raf = requestAnimationFrame(loop);
   }
 
@@ -511,8 +551,8 @@ export async function mount({ root, toast, celebrate, storage }) {
     action(name);
     if (!['left', 'right', 'down'].includes(name)) return;
     repeatDelay = setTimeout(() => {
-      repeatTimer = setInterval(() => action(name), name === 'down' ? 55 : 72);
-    }, 230);
+      repeatTimer = setInterval(() => action(name), name === 'down' ? 70 : 88);
+    }, 260);
   }
 
   function onCanvasPointerDown(event) {
@@ -525,6 +565,8 @@ export async function mount({ root, toast, celebrate, storage }) {
       startY: event.clientY,
       anchorX: event.clientX,
       anchorY: event.clientY,
+      startTime: performance.now(),
+      axis: null,
       moved: false
     };
   }
@@ -532,40 +574,65 @@ export async function mount({ root, toast, celebrate, storage }) {
   function onCanvasPointerMove(event) {
     if (!gesture || event.pointerId !== gesture.id || !running || gameOver) return;
     event.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const xStep = Math.max(19, (rect.width / COLS) * .78);
-    const yStep = Math.max(22, (rect.height / ROWS) * .86);
-    let dx = event.clientX - gesture.anchorX;
-    let dy = event.clientY - gesture.anchorY;
 
-    while (Math.abs(dx) >= xStep) {
-      move(dx > 0 ? 1 : -1);
-      gesture.anchorX += dx > 0 ? xStep : -xStep;
-      dx = event.clientX - gesture.anchorX;
+    const totalX = event.clientX - gesture.startX;
+    const totalY = event.clientY - gesture.startY;
+    const absX = Math.abs(totalX);
+    const absY = Math.abs(totalY);
+
+    // Lock a gesture to one axis so a slightly diagonal thumb does not make
+    // the piece jitter sideways while Paige is trying to move it down.
+    if (!gesture.axis && Math.hypot(totalX, totalY) >= 11) {
+      if (absX > absY * 1.12) gesture.axis = 'x';
+      else if (absY > absX * 1.12) gesture.axis = 'y';
+      else return;
       gesture.moved = true;
     }
-    while (dy >= yStep) {
-      softDrop();
-      gesture.anchorY += yStep;
-      dy = event.clientY - gesture.anchorY;
-      gesture.moved = true;
+
+    if (!gesture.axis) return;
+    const rect = canvas.getBoundingClientRect();
+    const cellPx = rect.width / COLS;
+
+    if (gesture.axis === 'x') {
+      const step = Math.max(24, cellPx * .92);
+      let dx = event.clientX - gesture.anchorX;
+      while (Math.abs(dx) >= step) {
+        move(dx > 0 ? 1 : -1);
+        gesture.anchorX += dx > 0 ? step : -step;
+        dx = event.clientX - gesture.anchorX;
+      }
+    } else if (gesture.axis === 'y') {
+      const step = Math.max(21, cellPx * .82);
+      let dy = event.clientY - gesture.anchorY;
+      while (dy >= step) {
+        softDrop();
+        gesture.anchorY += step;
+        dy = event.clientY - gesture.anchorY;
+      }
     }
   }
 
   function onCanvasPointerUp(event) {
     if (!gesture || event.pointerId !== gesture.id) return;
+    event.preventDefault();
     const totalX = event.clientX - gesture.startX;
     const totalY = event.clientY - gesture.startY;
     const distance = Math.hypot(totalX, totalY);
-    const wasMoved = gesture.moved;
+    const duration = Math.max(1, performance.now() - gesture.startTime);
+    const axis = gesture.axis;
     gesture = null;
     if (!running || gameOver) return;
 
-    if (!wasMoved && distance < 12) {
+    // A true tap rotates. Dragging never accidentally rotates.
+    if (!axis && distance < 11) {
       rotatePiece();
       return;
     }
-    if (totalY > 68 && Math.abs(totalY) > Math.abs(totalX) * 1.15) hardDrop();
+
+    // Only a deliberate fast downward flick hard-drops. A normal downward
+    // drag simply soft-drops row by row and stops exactly where the thumb stops.
+    const velocityY = totalY / duration;
+    if (axis === 'y' && totalY > 72 && velocityY > .42) hardDrop();
   }
 
   function onCanvasPointerCancel(event) {
@@ -597,6 +664,12 @@ export async function mount({ root, toast, celebrate, storage }) {
   document.addEventListener('visibilitychange', handleVisibility);
   window.addEventListener('pagehide', handlePageHide);
 
+  resizeObserver = new ResizeObserver(fitBoard);
+  resizeObserver.observe(layout);
+  window.addEventListener('resize', fitBoard, { passive: true });
+  window.visualViewport?.addEventListener('resize', fitBoard, { passive: true });
+  fitBoard();
+
   if (!restoreState()) startFresh();
   else toast('Game restored. Tap Resume.');
   last = performance.now();
@@ -615,6 +688,11 @@ export async function mount({ root, toast, celebrate, storage }) {
       canvas.removeEventListener('pointercancel', onCanvasPointerCancel);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('resize', fitBoard);
+      window.visualViewport?.removeEventListener('resize', fitBoard);
+      resizeObserver?.disconnect();
+      cancelAnimationFrame(resizeRaf);
+      root.classList.remove('tetris-active');
     },
     replay() { startFresh(); }
   };

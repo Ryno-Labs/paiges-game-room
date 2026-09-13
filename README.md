@@ -52,3 +52,8 @@ If the GitHub repository/Pages site is public, the custom family artwork is publ
 ## Add another game later
 
 See `ADD-A-GAME.md`. The shell is intentionally modular: add one game module, one registry entry, its artwork, and its cached file path.
+
+
+## iPhone Tetris controls
+
+Tetris is locked to one non-scrolling screen. Tap the board to rotate, drag left/right to move, drag down to soft-drop, and use a quick downward flick to hard-drop. The gesture locks to one axis to prevent diagonal thumb movement from making the piece jitter.
