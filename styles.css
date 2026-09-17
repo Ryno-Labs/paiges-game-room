@@ -104,7 +104,7 @@ img { -webkit-user-drag: none; user-select: none; }
   overflow: hidden;
   height: min(34svh, 285px);
   min-height: 220px;
-  background: #d9aa80 url('./assets/paige-hero.png') center 24%/cover no-repeat;
+  background: #d9aa80 url('./assets/paige-hero-v4.png') center 24%/cover no-repeat;
   border-bottom: var(--line);
 }
 .home-hero::after {

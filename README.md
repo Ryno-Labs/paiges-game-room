@@ -67,4 +67,4 @@ No move limit. Continue until the board runs out of room and chase Paige's perso
 
 
 ## Hero refresh
-The home hero now uses `assets/paige-hero.png`. The service-worker cache key was bumped so installed iPhones fetch the new artwork automatically.
+The home hero now uses `assets/paige-hero-v4.png`. The service-worker cache key was bumped so installed iPhones fetch the new artwork automatically.
