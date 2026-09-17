@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-six-month-v9';
+const CACHE = 'paige-game-room-six-month-v9-hero3';
 
 const CORE_SHELL = [
   './',
@@ -11,7 +11,7 @@ const CORE_SHELL = [
 ];
 
 const OPTIONAL_ASSETS = [
-  './assets/paige-hero.jpg',
+  './assets/paige-hero.png',
   './assets/victory-team.jpg',
   './assets/solitaire-card.jpg',
   './assets/icon-180.png',

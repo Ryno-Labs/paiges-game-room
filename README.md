@@ -64,3 +64,7 @@ No move limit. Continue until the board runs out of room and chase Paige's perso
 - Home/mode screens can scroll normally on smaller iPhones.
 - Saved progress is local to Paige's iPhone/browser storage.
 - Works offline after the app shell has been cached once.
+
+
+## Hero refresh
+The home hero now uses `assets/paige-hero.png`. The service-worker cache key was bumped so installed iPhones fetch the new artwork automatically.
