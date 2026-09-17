@@ -1,42 +1,60 @@
-# Paige's Game Room — Practical v8
+# Paige's Game Room — Six-Month Journey v9
 
 Private, ad-free, iPhone-first PWA for Paige. Built for GitHub Pages with no backend, account, API, subscription, or recurring hosting cost.
 
-## Games
+## What changed in v9
 
-### Solitaire
+Paige finished the first Blocks chapter quickly, so the Journey is now designed as a long-form path instead of a short demo.
 
-The old single-mode Klondike build has been replaced by a Solitaire hub with four experiences:
+- **720 total Journey levels**
+- **24 chapters × 30 levels**
+- At an average of **4 levels per day**, the path is exactly **180 days** of play.
+- Every 10th level is a checkpoint.
+- Every 30th level is a chapter finale with the Ryan/Link/Sketch celebration art.
+- Difficulty increases gradually through tighter goals and a larger shape library.
+- Later chapters introduce larger and less forgiving pieces while keeping play untimed.
+- Journey progress, chapter progress, medals, current level, and completed chapters persist locally.
+- Existing v8 progress migrates forward. If Paige already completed the original 10 levels, she starts at **Level 11** instead of being reset.
+
+The 720 levels are generated deterministically from a fixed progression system, so every numbered level stays the same when replayed. The main progression goals rotate through line clears, scoring, rows, and columns. Harder skills such as double-clears and combos are used mainly as optional mastery-medal goals so they add depth without blocking the Journey.
+
+## Solitaire
+
+Solitaire remains the Practical build:
 
 - **Classic** — Draw 1, unlimited stock passes, undo and hints.
-- **Challenge** — Draw 3 with the same calm table and full recovery tools.
-- **Vegas** — $52 fake-money buy-in, +$5 for each foundation card, one stock pass, persistent Paige's Bankroll.
-- **Today's Deal** — a seeded Vegas deal that changes once per local calendar day.
+- **Challenge** — Draw 3.
+- **Vegas** — $52 fake-money buy-in, +$5 per foundation card, one stock pass, persistent Paige's Bankroll.
+- **Today's Deal** — seeded Vegas deal that changes once per local calendar day.
 
-Vegas bankroll changes happen when the hand happens: the buy-in is charged on the deal and foundation payouts are added immediately. Undo restores the bankroll with the card state. A Vegas hand can be ended before a full win and still finish profitably.
+It keeps auto-save, tap-to-logical-move, drag, undo, hints, themes, stats, and the Ryan/Link/Sketch celebration.
 
-Solitaire also includes auto-save, responsive portrait layout, large ranks/suits, tap-to-logical-move, drag for alternate destinations, undo, hints, safe auto-finish when the exposed position is deterministic enough, three table themes, stats by mode, and the Ryan/Link/Sketch celebration on a full clear.
+## Paige's Blocks
 
-### Paige's Blocks
+### Journey
 
-The falling-block game has been replaced by a calm, original 8×8 placement puzzle.
+- 720 levels
+- 24 named chapters
+- 30 levels per chapter
+- 3 medals per level
+- Visible current/target progress
+- Move limits
+- Checkpoints every 10 levels
+- Chapter finales every 30 levels
+- Undo, hint, auto-save, instant retry, and failed-level undo rescue
+- Progressive shape difficulty
 
-- **Journey** — Chapter 1, "First Clears," with 10 finite levels.
-- **Endless** — no move limit; chase Paige's personal best until no piece fits.
+### Endless
 
-Journey levels always show one primary goal, live progress, moves remaining, and combo. Each level can earn up to three medals: completion, efficient completion, and one bonus mastery goal. The tenth level is the chapter finale.
-
-Controls are iPhone-first: tap a piece and tap the board, or drag the piece onto the board. Undo, hints, auto-save, instant retry, and an undo-last-move rescue on failed Journey levels are built in.
+No move limit. Continue until the board runs out of room and chase Paige's personal best.
 
 ## Deploy to GitHub Pages
 
 1. Upload the contents of this folder to the existing GitHub repository.
 2. Keep the same GitHub Pages URL Paige already uses.
 3. GitHub Pages redeploys automatically.
-4. Paige's installed PWA checks for the update when opened or brought back to the foreground.
+4. Paige's installed PWA checks for updates when opened or brought back to the foreground.
 5. If she is inside a game, the new service worker waits until she returns to the Game Room home screen before taking control.
-
-Do not rename paths unless you also update `sw.js` and the registry in `js/app.js`.
 
 ## iPhone notes
 
@@ -46,13 +64,3 @@ Do not rename paths unless you also update `sw.js` and the registry in `js/app.j
 - Home/mode screens can scroll normally on smaller iPhones.
 - Saved progress is local to Paige's iPhone/browser storage.
 - Works offline after the app shell has been cached once.
-
-## Main files
-
-- `index.html` — PWA shell and celebration overlay.
-- `styles.css` — all iPhone layouts and game styling.
-- `js/app.js` — home screen, registry, navigation, safe updates.
-- `js/games/solitaire.js` — all four Solitaire modes and bankroll.
-- `js/games/blocks.js` — Journey and Endless block puzzle.
-- `sw.js` — offline caching and game-safe update activation.
-- `manifest.webmanifest` — install metadata and app icons.

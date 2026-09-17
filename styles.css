@@ -433,7 +433,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .sol-result-screen p { color:#595159; font-size:13px; font-weight:750; line-height:1.35; }
 .big-action { width:100%; min-height:52px; margin-top:8px; font-size:15px; }
 
-/* Blocks v8: progression-first, untimed placement */
+/* Blocks v9: six-month progression-first, untimed placement */
 .screen.blocks-active { overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; padding-bottom:env(safe-area-inset-bottom); }
 .screen.blocks-active.blocks-board-open { overflow:hidden; overscroll-behavior:none; padding-bottom:0; touch-action:none; }
 .blocks-hub { padding:16px 12px max(18px,env(safe-area-inset-bottom)); }
@@ -445,7 +445,21 @@ img { -webkit-user-drag: none; user-select: none; }
 .blocks-primary-card strong,.blocks-endless-card strong { font-size:18px; line-height:1.08; }
 .blocks-primary-card em,.blocks-endless-card em { font-size:11px; font-style:normal; font-weight:800; color:#59545e; }
 .blocks-primary-card b,.blocks-endless-card b { font-size:12px; white-space:nowrap; }
+.journey-overall { margin:0 0 10px; border:2px solid #171717; border-radius:15px; background:#fff9ee; padding:10px 11px; }
+.journey-overall > div:first-child { display:flex; justify-content:space-between; gap:8px; font-size:10px; font-weight:950; }
+.journey-bar { height:7px; margin:7px 0 5px; border:1.5px solid #171717; border-radius:999px; background:#e7e0d7; overflow:hidden; }
+.journey-bar i { display:block; height:100%; background:#78b98b; border-radius:inherit; transition:width .2s ease; }
+.journey-overall > small { display:block; text-align:right; font-size:8px; font-weight:900; color:#6b646c; }
 .chapter-progress { border:var(--line); border-radius:18px; padding:11px; background:#fff9ee; box-shadow:var(--shadow); }
+
+.chapter-heading { display:grid !important; grid-template-columns:38px 1fr 38px; align-items:center; gap:8px; margin-bottom:8px !important; }
+.chapter-heading span { min-width:0; display:flex; flex-direction:column; text-align:center; gap:1px; }
+.chapter-heading small { font-size:8px; letter-spacing:.12em; color:#6a636d; }
+.chapter-heading strong { font-size:17px; line-height:1.05; }
+.chapter-heading em { font-size:9px; line-height:1.2; font-style:normal; color:#6a636d; }
+.chapter-arrow { min-width:38px; min-height:42px; border:2px solid #171717; border-radius:12px; background:#f4eee6; font-size:24px; font-weight:900; line-height:1; }
+.chapter-arrow:disabled { opacity:.22; }
+.chapter-medals { display:flex; justify-content:space-between; gap:8px; margin-bottom:8px; font-size:10px; font-weight:900; }
 .chapter-progress > div:first-child { display:flex; justify-content:space-between; gap:8px; font-size:11px; font-weight:900; margin-bottom:9px; }
 .medal-track { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
 .level-dot { min-height:48px; border:2px solid #171717; border-radius:12px; background:#f3eee6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:3px; }
@@ -454,6 +468,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .level-dot.current { background:#f7d64d; transform:translateY(-1px); }
 .level-dot.done { background:#d5eadc; }
 .level-dot.locked { opacity:.38; border-style:dashed; }
+.level-dot.milestone { border-width:3px; }
+.level-dot.milestone:not(.done):not(.current) { background:#f4e8c0; }
 .level-intro { padding:14px 14px max(20px,env(safe-area-inset-bottom)); }
 .text-back { min-height:44px; border:0; background:transparent; padding:0; font-size:14px; font-weight:900; color:#59535d; }
 .objective-card { border:var(--line); border-radius:20px; background:linear-gradient(145deg,#dbeaf5,#e9dff0); box-shadow:var(--shadow); padding:16px; margin:14px 0 10px; display:flex; flex-direction:column; gap:4px; }
@@ -463,6 +479,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .mastery-list { display:grid; gap:6px; margin:10px 0 14px; }
 .mastery-list div { border:2px solid #171717; border-radius:13px; background:#fff9ee; padding:9px 10px; display:flex; gap:8px; align-items:center; font-size:12px; font-weight:800; }
 .mastery-list b { color:#d3a413; font-size:18px; }
+.milestone-chip { width:max-content; margin:8px 0 0; border:2px solid #171717; border-radius:999px; background:#f7d64d; padding:5px 9px; font-size:9px; font-weight:1000; letter-spacing:.1em; }
 
 .blocks-screen { height:100%; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
 .blocks-topline { flex:0 0 50px; min-height:50px; padding:5px 6px; display:flex; align-items:center; gap:5px; background:var(--paper); }

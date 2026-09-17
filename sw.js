@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-practical-v8';
+const CACHE = 'paige-game-room-six-month-v9';
 
 const CORE_SHELL = [
   './',

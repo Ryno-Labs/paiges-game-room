@@ -28,7 +28,7 @@ export const GAME_REGISTRY = [
   {
     id: 'blocks',
     title: "Paige's Blocks",
-    subtitle: 'A calm level journey with clear goals, plus Endless play.',
+    subtitle: '720 levels across 24 calm chapters, plus Endless play.',
     artType: 'blocks',
     module: './games/blocks.js',
     enabled: true
