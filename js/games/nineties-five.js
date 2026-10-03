@@ -377,8 +377,11 @@ export async function mount({ root, toast, storage }) {
   }
 
   function resultGrid() {
-    return state.guesses.map(g => evaluateGuess(g,puzzle.answer).map(x => x==='exact'?'🟩':x==='present'?'🟨':'⬛').join('')).join('
-');
+    return state.guesses
+      .map(g => evaluateGuess(g, puzzle.answer)
+        .map(x => x === 'exact' ? '🟩' : x === 'present' ? '🟨' : '⬛')
+        .join(''))
+      .join('\n');
   }
 
   function challengeUrl() {

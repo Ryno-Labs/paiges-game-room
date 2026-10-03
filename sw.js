@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-v10-90s-five';
+const CACHE = 'paige-game-room-v10-90s-five-fix1';
 
 const CORE_SHELL = [
   './',
