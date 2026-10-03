@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-v10-90s-five-fix1';
+const CACHE = 'paige-game-room-v13-category';
 
 const CORE_SHELL = [
   './',
@@ -8,7 +8,8 @@ const CORE_SHELL = [
   './js/app.js',
   './js/games/solitaire.js',
   './js/games/blocks.js',
-  './js/games/nineties-five.js'
+  './js/games/nineties-five.js',
+  './js/games/five-letter-words.js'
 ];
 
 const OPTIONAL_ASSETS = [

@@ -1,109 +1,114 @@
+import { VALID_GUESSES } from './five-letter-words.js';
+
 const STORAGE_NS = 'pgr90five:v1:';
 const MAX_GUESSES = 6;
 const WORD_LEN = 5;
 const CHALLENGE_HOURS = 24;
 const PUZZLES = [
-  {"id": 1, "answer": "SONIC", "category": "Video Games", "clue": "Blue, fast, and very Sega."},
-  {"id": 2, "answer": "MARIO", "category": "Video Games", "clue": "Nintendo plumber with a red cap."},
-  {"id": 3, "answer": "ZELDA", "category": "Video Games", "clue": "The princess at the center of a legendary Nintendo series."},
-  {"id": 4, "answer": "KIRBY", "category": "Video Games", "clue": "Pink Nintendo hero with a huge appetite."},
-  {"id": 5, "answer": "CRASH", "category": "Video Games", "clue": "Bandicoot who became a PlayStation mascot."},
-  {"id": 6, "answer": "SPYRO", "category": "Video Games", "clue": "Small purple dragon from the original PlayStation era."},
-  {"id": 7, "answer": "YOSHI", "category": "Video Games", "clue": "Mario’s green dinosaur pal."},
-  {"id": 8, "answer": "PEACH", "category": "Video Games", "clue": "Princess of the Mushroom Kingdom."},
-  {"id": 9, "answer": "WARIO", "category": "Video Games", "clue": "Mario’s greedy yellow-and-purple rival."},
-  {"id": 10, "answer": "SAMUS", "category": "Video Games", "clue": "Armored bounty hunter from Metroid."},
-  {"id": 11, "answer": "CLOUD", "category": "Video Games", "clue": "Spiky-haired hero of Final Fantasy VII."},
-  {"id": 12, "answer": "QUAKE", "category": "Video Games", "clue": "1996 PC shooter from id Software."},
-  {"id": 13, "answer": "WORMS", "category": "Video Games", "clue": "Tiny teams, big weapons, turn-based chaos."},
-  {"id": 14, "answer": "BANJO", "category": "Video Games", "clue": "Bear half of a famous N64 duo."},
-  {"id": 15, "answer": "SOLID", "category": "Video Games", "clue": "The middle word in a huge 1998 stealth-game title."},
-  {"id": 16, "answer": "DARIA", "category": "TV & Cartoons", "clue": "Deadpan teen who spun off from Beavis and Butt-Head."},
-  {"id": 17, "answer": "URKEL", "category": "TV & Cartoons", "clue": "Family Matters neighbor known for suspenders and “Did I do that?”"},
-  {"id": 18, "answer": "BUFFY", "category": "TV & Cartoons", "clue": "Sunnydale’s vampire slayer."},
-  {"id": 19, "answer": "ANGEL", "category": "TV & Cartoons", "clue": "Buffy’s brooding vampire with a soul."},
-  {"id": 20, "answer": "PINKY", "category": "TV & Cartoons", "clue": "One half of a lab-mouse duo trying to take over the world."},
-  {"id": 21, "answer": "BRAIN", "category": "TV & Cartoons", "clue": "The ambitious half of Pinky’s lab-mouse duo."},
-  {"id": 22, "answer": "KELSO", "category": "TV & Cartoons", "clue": "Ashton Kutcher’s lovable doofus on That ’70s Show."},
-  {"id": 23, "answer": "KENAN", "category": "TV & Cartoons", "clue": "Nickelodeon star paired with Kel."},
-  {"id": 24, "answer": "ROCKO", "category": "TV & Cartoons", "clue": "Wallaby with a Modern Life."},
-  {"id": 25, "answer": "SAVED", "category": "TV & Cartoons", "clue": "First word of the Bayside High sitcom title."},
-  {"id": 26, "answer": "FRESH", "category": "TV & Cartoons", "clue": "First word of Will Smith’s Bel-Air sitcom title."},
-  {"id": 27, "answer": "POWER", "category": "TV & Cartoons", "clue": "First word in the 1993 team of color-coded Rangers."},
-  {"id": 28, "answer": "GOOSE", "category": "TV & Cartoons", "clue": "First half of R.L. Stine’s kid-horror series title."},
-  {"id": 29, "answer": "PARTY", "category": "TV & Cartoons", "clue": "First word of the Fox drama about five siblings."},
-  {"id": 30, "answer": "OPRAH", "category": "TV & Cartoons", "clue": "Daytime talk-show powerhouse of the decade."},
-  {"id": 31, "answer": "RICKI", "category": "TV & Cartoons", "clue": "First name of a major 90s daytime talk-show host."},
-  {"id": 32, "answer": "ROSIE", "category": "TV & Cartoons", "clue": "First name of the comedian whose daytime show began in 1996."},
-  {"id": 33, "answer": "JESSE", "category": "TV & Cartoons", "clue": "Uncle ____ on Full House."},
-  {"id": 34, "answer": "BECKY", "category": "TV & Cartoons", "clue": "Aunt ____ on Full House."},
-  {"id": 35, "answer": "DYLAN", "category": "TV & Cartoons", "clue": "Luke Perry’s Beverly Hills, 90210 character."},
-  {"id": 36, "answer": "GHOST", "category": "Movies", "clue": "1990 romance with pottery and a supernatural twist."},
-  {"id": 37, "answer": "SPEED", "category": "Movies", "clue": "1994 action movie built around a city bus."},
-  {"id": 38, "answer": "SEVEN", "category": "Movies", "clue": "1995 thriller whose title is often stylized with a number."},
-  {"id": 39, "answer": "FARGO", "category": "Movies", "clue": "1996 snowy crime film from the Coen brothers."},
-  {"id": 40, "answer": "BLADE", "category": "Movies", "clue": "1998 vampire-hunter superhero movie."},
-  {"id": 41, "answer": "SPAWN", "category": "Movies", "clue": "1997 comic-book antihero movie."},
-  {"id": 42, "answer": "HOCUS", "category": "Movies", "clue": "First word of the 1993 Sanderson-sisters movie."},
-  {"id": 43, "answer": "MULAN", "category": "Movies", "clue": "Disney heroine who takes her father’s place in the army."},
-  {"id": 44, "answer": "WOODY", "category": "Movies", "clue": "Cowboy toy voiced by Tom Hanks."},
-  {"id": 45, "answer": "SIMBA", "category": "Movies", "clue": "Young lion who becomes king."},
-  {"id": 46, "answer": "BELLE", "category": "Movies", "clue": "Book-loving heroine of Beauty and the Beast."},
-  {"id": 47, "answer": "BEAST", "category": "Movies", "clue": "Cursed prince in a 1991 Disney classic."},
-  {"id": 48, "answer": "GENIE", "category": "Movies", "clue": "Blue wish-granter in Aladdin."},
-  {"id": 49, "answer": "JAFAR", "category": "Movies", "clue": "Aladdin villain with a cobra staff."},
-  {"id": 50, "answer": "ROBIN", "category": "Movies", "clue": "Batman’s sidekick shared the title of a 1997 movie."},
-  {"id": 51, "answer": "JUICE", "category": "Movies", "clue": "1992 crime drama starring Tupac Shakur."},
-  {"id": 52, "answer": "RONIN", "category": "Movies", "clue": "1998 action thriller with famous car chases."},
-  {"id": 53, "answer": "BOUND", "category": "Movies", "clue": "1996 neo-noir crime thriller from the Wachowskis."},
-  {"id": 54, "answer": "KEVIN", "category": "Movies", "clue": "First name of the kid left Home Alone."},
-  {"id": 55, "answer": "ETHAN", "category": "Movies", "clue": "Tom Cruise’s Mission: Impossible character."},
-  {"id": 56, "answer": "SPICE", "category": "Music", "clue": "The Girls who told everyone what they really, really wanted."},
-  {"id": 57, "answer": "OASIS", "category": "Music", "clue": "Britpop band behind “Wonderwall.”"},
-  {"id": 58, "answer": "JEWEL", "category": "Music", "clue": "Singer-songwriter behind “You Were Meant for Me.”"},
-  {"id": 59, "answer": "USHER", "category": "Music", "clue": "R&B singer who broke out as a teen in the 90s."},
-  {"id": 60, "answer": "SNOOP", "category": "Music", "clue": "Rapper who debuted with Doggystyle."},
-  {"id": 61, "answer": "JANET", "category": "Music", "clue": "Jackson sibling behind the janet. era."},
-  {"id": 62, "answer": "TUPAC", "category": "Music", "clue": "Rapper also known as 2Pac."},
-  {"id": 63, "answer": "BJORK", "category": "Music", "clue": "Icelandic artist behind Debut and Post."},
-  {"id": 64, "answer": "STING", "category": "Music", "clue": "Former Police frontman with a huge 90s solo career."},
-  {"id": 65, "answer": "FAITH", "category": "Music", "clue": "First name of country star Hill."},
-  {"id": 66, "answer": "TONIC", "category": "Music", "clue": "Band behind “If You Could Only See.”"},
-  {"id": 67, "answer": "BLINK", "category": "Music", "clue": "First word in the pop-punk trio’s name ending in 182."},
-  {"id": 68, "answer": "CREEP", "category": "Music", "clue": "A 90s hit title shared by TLC and Radiohead."},
-  {"id": 69, "answer": "LOSER", "category": "Music", "clue": "Beck’s breakout 1994 hit."},
-  {"id": 70, "answer": "ALIVE", "category": "Music", "clue": "Pearl Jam song from Ten."},
-  {"id": 71, "answer": "VOGUE", "category": "Music", "clue": "Madonna hit that became a dance-floor command."},
-  {"id": 72, "answer": "CREAM", "category": "Music", "clue": "Prince hit released in 1991."},
-  {"id": 73, "answer": "MAMBO", "category": "Music", "clue": "First word in Lou Bega’s 1999 “No. 5” hit."},
-  {"id": 74, "answer": "NSYNC", "category": "Music", "clue": "Boy band featuring Justin Timberlake."},
-  {"id": 75, "answer": "FIONA", "category": "Music", "clue": "First name of singer-songwriter Apple."},
-  {"id": 76, "answer": "FURBY", "category": "Toys & Trends", "clue": "Big-eyed electronic pet that became a 1998 craze."},
-  {"id": 77, "answer": "BOPIT", "category": "Toys & Trends", "clue": "Toy that tells you to twist it, pull it, and do this."},
-  {"id": 78, "answer": "KOOSH", "category": "Toys & Trends", "clue": "Rubbery ball made of colorful strands."},
-  {"id": 79, "answer": "POLLY", "category": "Toys & Trends", "clue": "First name of the tiny-pocket playset doll."},
-  {"id": 80, "answer": "TROLL", "category": "Toys & Trends", "clue": "Wild-haired dolls that came roaring back in the 90s."},
-  {"id": 81, "answer": "SURGE", "category": "Snacks & Drinks", "clue": "Neon-green citrus soda Coca-Cola launched in 1997."},
-  {"id": 82, "answer": "NOKIA", "category": "Tech", "clue": "Phone brand famous for nearly indestructible handsets."},
-  {"id": 83, "answer": "PAGER", "category": "Tech", "clue": "Pocket device that told you who needed a callback."},
-  {"id": 84, "answer": "MODEM", "category": "Tech", "clue": "Noisy box that got the family computer online."},
-  {"id": 85, "answer": "YAHOO", "category": "Tech", "clue": "Purple web portal and search brand launched in the 90s."},
-  {"id": 86, "answer": "EMAIL", "category": "Tech", "clue": "The message format that started replacing letters and faxes."},
-  {"id": 87, "answer": "CDROM", "category": "Tech", "clue": "Shiny computer disc format used for games and encyclopedias."},
-  {"id": 88, "answer": "PLAID", "category": "Fashion", "clue": "Pattern strongly tied to grunge shirts."},
-  {"id": 89, "answer": "FLARE", "category": "Fashion", "clue": "Jeans shape that widened toward the ankle."},
-  {"id": 90, "answer": "KHAKI", "category": "Fashion", "clue": "Mall-era pants color that became office-casual shorthand."},
-  {"id": 91, "answer": "CARGO", "category": "Fashion", "clue": "Pocket-heavy pants that were everywhere late in the decade."},
-  {"id": 92, "answer": "BAGGY", "category": "Fashion", "clue": "The fit of a lot of 90s jeans and streetwear."},
-  {"id": 93, "answer": "FROST", "category": "Fashion", "clue": "What happened to the tips of plenty of 90s hair."},
-  {"id": 94, "answer": "LEVIS", "category": "Fashion", "clue": "Classic denim brand with a huge 90s presence."},
-  {"id": 95, "answer": "GUESS", "category": "Fashion", "clue": "Denim-and-fashion brand known for black-and-white ads."},
-  {"id": 96, "answer": "TYSON", "category": "Sports", "clue": "Heavyweight boxer whose name dominated 90s headlines."},
-  {"id": 97, "answer": "TIGER", "category": "Sports", "clue": "First name/nickname of Woods, who won the 1997 Masters."},
-  {"id": 98, "answer": "VENUS", "category": "Sports", "clue": "Williams sister who reached the 1997 U.S. Open final."},
-  {"id": 99, "answer": "VIPER", "category": "Cars", "clue": "Dodge supercar that became a 90s poster favorite."},
-  {"id": 100, "answer": "SUPRA", "category": "Cars", "clue": "Toyota performance icon made famous by 90s tuner culture."},
+  {"id": 1, "answer": "SONIC", "category": "Video Games", "clue": "A mascot who made speed feel like attitude."},
+  {"id": 2, "answer": "MARIO", "category": "Video Games", "clue": "He spent the decade jumping into new dimensions."},
+  {"id": 3, "answer": "ZELDA", "category": "Video Games", "clue": "A royal name attached to a legend bigger than herself."},
+  {"id": 4, "answer": "KIRBY", "category": "Video Games", "clue": "Small, round, and surprisingly hard to classify."},
+  {"id": 5, "answer": "CRASH", "category": "Video Games", "clue": "A console-era mascot with more spin than subtlety."},
+  {"id": 6, "answer": "SPYRO", "category": "Video Games", "clue": "A late-decade hero who made collecting feel fiery."},
+  {"id": 7, "answer": "YOSHI", "category": "Video Games", "clue": "A sidekick who became a star in his own right."},
+  {"id": 8, "answer": "PEACH", "category": "Video Games", "clue": "A royal regular in one of gaming's busiest kingdoms."},
+  {"id": 9, "answer": "WARIO", "category": "Video Games", "clue": "The antihero version of someone much more famous."},
+  {"id": 10, "answer": "SAMUS", "category": "Video Games", "clue": "A reveal changed how players saw this armored hero."},
+  {"id": 11, "answer": "CLOUD", "category": "Video Games", "clue": "An oversized sword became part of the silhouette."},
+  {"id": 12, "answer": "QUAKE", "category": "Video Games", "clue": "PC players knew the name before online shooters became normal."},
+  {"id": 13, "answer": "WORMS", "category": "Video Games", "clue": "Cute characters, wildly disproportionate firepower."},
+  {"id": 14, "answer": "BANJO", "category": "Video Games", "clue": "One half of an oddball duo built for collecting."},
+  {"id": 15, "answer": "SOLID", "category": "Video Games", "clue": "A single adjective turned up in a stealth classic's title."},
+  {"id": 16, "answer": "DARIA", "category": "TV & Cartoons", "clue": "A monotone voice for anyone unimpressed by high school."},
+  {"id": 17, "answer": "URKEL", "category": "TV & Cartoons", "clue": "A neighbor who could derail an entire room by walking in."},
+  {"id": 18, "answer": "BUFFY", "category": "TV & Cartoons", "clue": "Homework by day, much stranger responsibilities after dark."},
+  {"id": 19, "answer": "ANGEL", "category": "TV & Cartoons", "clue": "A dark romantic lead whose past was much older than he looked."},
+  {"id": 20, "answer": "PINKY", "category": "TV & Cartoons", "clue": "The less strategic half of a very ambitious partnership."},
+  {"id": 21, "answer": "BRAIN", "category": "TV & Cartoons", "clue": "He had a plan every night, whether it worked or not."},
+  {"id": 22, "answer": "KELSO", "category": "TV & Cartoons", "clue": "Good looks consistently outran good judgment."},
+  {"id": 23, "answer": "KENAN", "category": "TV & Cartoons", "clue": "A Nickelodeon pairing worked better because of this first name."},
+  {"id": 24, "answer": "ROCKO", "category": "TV & Cartoons", "clue": "Adult problems, cartoon packaging."},
+  {"id": 25, "answer": "SAVED", "category": "TV & Cartoons", "clue": "A school bell and a knowing look at the camera."},
+  {"id": 26, "answer": "FRESH", "category": "TV & Cartoons", "clue": "A cross-country move turned into prime-time comedy."},
+  {"id": 27, "answer": "POWER", "category": "TV & Cartoons", "clue": "Five colors made after-school TV feel like an event."},
+  {"id": 28, "answer": "GOOSE", "category": "TV & Cartoons", "clue": "You probably judged these books by the cover art."},
+  {"id": 29, "answer": "PARTY", "category": "TV & Cartoons", "clue": "Five siblings had to figure out adulthood too early."},
+  {"id": 30, "answer": "OPRAH", "category": "TV & Cartoons", "clue": "An afternoon name that became bigger than television."},
+  {"id": 31, "answer": "RICKI", "category": "TV & Cartoons", "clue": "Daytime got louder when this first name hit the schedule."},
+  {"id": 32, "answer": "ROSIE", "category": "TV & Cartoons", "clue": "A talk show built around comedy, conversation, and a desk."},
+  {"id": 33, "answer": "JESSE", "category": "TV & Cartoons", "clue": "A leather jacket, good hair, and a very crowded house."},
+  {"id": 34, "answer": "BECKY", "category": "TV & Cartoons", "clue": "A morning-show professional who married into a packed house."},
+  {"id": 35, "answer": "DYLAN", "category": "TV & Cartoons", "clue": "Brooding was practically a zip code in this teen drama."},
+  {"id": 36, "answer": "GHOST", "category": "Movies", "clue": "A love story where one person had a serious availability problem."},
+  {"id": 37, "answer": "SPEED", "category": "Movies", "clue": "Public transportation came with an unusually strict rule."},
+  {"id": 38, "answer": "SEVEN", "category": "Movies", "clue": "A detective story organized around a very old list."},
+  {"id": 39, "answer": "FARGO", "category": "Movies", "clue": "Snow, accents, and a plan that unravels badly."},
+  {"id": 40, "answer": "BLADE", "category": "Movies", "clue": "A comic-book hero who worked nights for obvious reasons."},
+  {"id": 41, "answer": "SPAWN", "category": "Movies", "clue": "A deal after death came with terrible benefits."},
+  {"id": 42, "answer": "HOCUS", "category": "Movies", "clue": "Three sisters made one Massachusetts town regret the evening."},
+  {"id": 43, "answer": "MULAN", "category": "Movies", "clue": "Family duty required a very convincing disguise."},
+  {"id": 44, "answer": "WOODY", "category": "Movies", "clue": "One toy had a badge and a fear of being replaced."},
+  {"id": 45, "answer": "SIMBA", "category": "Movies", "clue": "A childhood mistake sent a future ruler away from home."},
+  {"id": 46, "answer": "BELLE", "category": "Movies", "clue": "A library card would have been her ideal gift."},
+  {"id": 47, "answer": "BEAST", "category": "Movies", "clue": "Bad manners were only part of the curse."},
+  {"id": 48, "answer": "GENIE", "category": "Movies", "clue": "Unlimited personality, very limited contractual freedom."},
+  {"id": 49, "answer": "JAFAR", "category": "Movies", "clue": "Ambition, robes, and a terrible interest in magical power."},
+  {"id": 50, "answer": "ROBIN", "category": "Movies", "clue": "A colorful partner sharing the spotlight with a much darker hero."},
+  {"id": 51, "answer": "JUICE", "category": "Movies", "clue": "Friendship and power turn dangerous in Harlem."},
+  {"id": 52, "answer": "RONIN", "category": "Movies", "clue": "Professionals, shifting loyalties, and a very good reason to watch the driving."},
+  {"id": 53, "answer": "BOUND", "category": "Movies", "clue": "A plan involving money, trust, and the people next door."},
+  {"id": 54, "answer": "KEVIN", "category": "Movies", "clue": "Holiday travel improved dramatically once everyone noticed who was missing."},
+  {"id": 55, "answer": "ETHAN", "category": "Movies", "clue": "A spy whose career repeatedly depends on impossible assignments."},
+  {"id": 56, "answer": "SPICE", "category": "Music", "clue": "Five personalities turned friendship into a global brand."},
+  {"id": 57, "answer": "OASIS", "category": "Music", "clue": "Sibling tension somehow produced enormous sing-alongs."},
+  {"id": 58, "answer": "JEWEL", "category": "Music", "clue": "Coffeehouse sincerity crossed over to radio."},
+  {"id": 59, "answer": "USHER", "category": "Music", "clue": "A teenager entered R&B and did not stay small for long."},
+  {"id": 60, "answer": "SNOOP", "category": "Music", "clue": "A laid-back voice became instantly recognizable on the West Coast."},
+  {"id": 61, "answer": "JANET", "category": "Music", "clue": "One surname was famous already; the first name stood on its own."},
+  {"id": 62, "answer": "TUPAC", "category": "Music", "clue": "A stage name and a number became equally recognizable."},
+  {"id": 63, "answer": "BJORK", "category": "Music", "clue": "Art-pop from Iceland rarely sounded this fearless."},
+  {"id": 64, "answer": "STING", "category": "Music", "clue": "A former band frontman kept the one-word name."},
+  {"id": 65, "answer": "FAITH", "category": "Music", "clue": "Country radio knew this first name before a famous last name followed."},
+  {"id": 66, "answer": "TONIC", "category": "Music", "clue": "A band name that sounds medicinal, even when the song wasn't."},
+  {"id": 67, "answer": "BLINK", "category": "Music", "clue": "Three digits finished the name."},
+  {"id": 68, "answer": "CREEP", "category": "Music", "clue": "Two very different artists had a hit with this same title."},
+  {"id": 69, "answer": "LOSER", "category": "Music", "clue": "A self-insult became an unlikely alternative anthem."},
+  {"id": 70, "answer": "ALIVE", "category": "Music", "clue": "One word from a debut album that refused to stay underground."},
+  {"id": 71, "answer": "VOGUE", "category": "Music", "clue": "A magazine title became a dance-floor instruction."},
+  {"id": 72, "answer": "CREAM", "category": "Music", "clue": "A dessert word became a Prince single."},
+  {"id": 73, "answer": "MAMBO", "category": "Music", "clue": "A dance name came with a number and a lot of names."},
+  {"id": 74, "answer": "NSYNC", "category": "Music", "clue": "An asterisk and harmonies helped define late-decade pop."},
+  {"id": 75, "answer": "FIONA", "category": "Music", "clue": "A first name paired with fruit in the alternative era."},
+  {"id": 76, "answer": "FURBY", "category": "Toys & Trends", "clue": "It seemed to learn just enough to make adults suspicious."},
+  {"id": 77, "answer": "BOPIT", "category": "Toys & Trends", "clue": "Following shouted instructions was the entire point."},
+  {"id": 78, "answer": "KOOSH", "category": "Toys & Trends", "clue": "A toy that looked like a handful of rubber noodles."},
+  {"id": 79, "answer": "POLLY", "category": "Toys & Trends", "clue": "A whole world had to fit inside something tiny."},
+  {"id": 80, "answer": "TROLL", "category": "Toys & Trends", "clue": "The hair was doing most of the work."},
+  {"id": 81, "answer": "SURGE", "category": "Snacks & Drinks", "clue": "A soda arrived looking like the decade had designed it."},
+  {"id": 82, "answer": "NOKIA", "category": "Tech", "clue": "Dropping one was usually more dangerous to the floor."},
+  {"id": 83, "answer": "PAGER", "category": "Tech", "clue": "A tiny screen could suddenly make you find a phone."},
+  {"id": 84, "answer": "MODEM", "category": "Tech", "clue": "The sound meant the internet was about to happen."},
+  {"id": 85, "answer": "YAHOO", "category": "Tech", "clue": "Before search became one box, this name was a front door to the web."},
+  {"id": 86, "answer": "EMAIL", "category": "Tech", "clue": "A mailbox moved onto the family computer."},
+  {"id": 87, "answer": "CDROM", "category": "Tech", "clue": "An encyclopedia could suddenly come on one shiny disc."},
+  {"id": 88, "answer": "PLAID", "category": "Fashion", "clue": "A pattern that could make a shirt look instantly more alternative."},
+  {"id": 89, "answer": "FLARE", "category": "Fashion", "clue": "The hem got wider as the decade went on."},
+  {"id": 90, "answer": "KHAKI", "category": "Fashion", "clue": "A neutral color became almost a dress code."},
+  {"id": 91, "answer": "CARGO", "category": "Fashion", "clue": "Extra pockets became the whole point."},
+  {"id": 92, "answer": "BAGGY", "category": "Fashion", "clue": "Fit mattered, and less fitting was often better."},
+  {"id": 93, "answer": "FROST", "category": "Fashion", "clue": "A salon effect that lived mostly at the ends."},
+  {"id": 94, "answer": "LEVIS", "category": "Fashion", "clue": "A red tab carried decades of denim history into the 90s."},
+  {"id": 95, "answer": "GUESS", "category": "Fashion", "clue": "A question word doubled as a denim label."},
+  {"id": 96, "answer": "TYSON", "category": "Sports", "clue": "A heavyweight name that could dominate headlines before the bell."},
+  {"id": 97, "answer": "TIGER", "category": "Sports", "clue": "A young golfer made this nickname feel inevitable."},
+  {"id": 98, "answer": "VENUS", "category": "Sports", "clue": "A planet name started showing up deep in tennis tournaments."},
+  {"id": 99, "answer": "VIPER", "category": "Cars", "clue": "A snake name belonged on bedroom-wall car posters."},
+  {"id": 100, "answer": "SUPRA", "category": "Cars", "clue": "A Japanese coupe became much larger than its sales brochure."}
 ];
+
+const THEMED_GUESSES = new Set(PUZZLES.map(item => item.answer));
+function isValidGuess(word) { return VALID_GUESSES.has(word.toLowerCase()) || THEMED_GUESSES.has(word.toUpperCase()); }
 
 function evaluateGuess(guess, answer) {
   const out = Array(WORD_LEN).fill('absent');
@@ -149,9 +154,14 @@ export async function mount({ root, toast, storage }) {
 
       <div id="five90ChallengeBanner" class="five90-challenge hidden" aria-live="polite"></div>
 
-      <div class="five90-meta" aria-live="polite">
-        <div><small>PUZZLE</small><strong id="five90PuzzleNumber">#001</strong></div>
-        <div><small>CATEGORY</small><strong id="five90Category">90s</strong></div>
+      <div class="five90-context" aria-live="polite">
+        <div class="five90-category-banner">
+          <small>TODAY'S CATEGORY</small>
+          <strong id="five90Category">90s</strong>
+        </div>
+        <button id="five90PickPuzzle" class="five90-meta-card five90-puzzle-pick" type="button" aria-label="Choose a puzzle number">
+          <span><small>PUZZLE</small><strong id="five90PuzzleNumber">#001</strong></span><em>Pick</em>
+        </button>
       </div>
 
       <div class="five90-board-wrap">
@@ -184,11 +194,25 @@ export async function mount({ root, toast, storage }) {
         <button id="five90HelpClose" class="five90-help-close" type="button" aria-label="Close help">×</button>
         <span class="five90-eyebrow">HOW TO PLAY</span>
         <h2 id="five90HelpTitle">Guess the 90s answer.</h2>
-        <p>Six tries. Five letters. Proper names, brands, titles, characters, tech and slang are all fair game.</p>
+        <p>Six tries. Five letters. Guesses must be real words. 90s names, brands, titles and characters used in this game are also valid.</p>
         <div class="five90-example"><i class="exact">S</i><span>Right letter, right spot.</span></div>
         <div class="five90-example"><i class="present">P</i><span>In the answer, wrong spot.</span></div>
         <div class="five90-example"><i class="absent">A</i><span>Not in the answer.</span></div>
-        <p class="five90-small">Use the clue whenever you want. Your Solitaire and Blocks saves are never touched.</p>
+        <p class="five90-small">The clue is only a nudge — not a giveaway. Your Solitaire and Blocks saves are never touched.</p>
+      </div>
+
+      <div id="five90PickerSheet" class="five90-help-sheet five90-picker-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="five90PickerTitle">
+        <button id="five90PickerClose" class="five90-help-close" type="button" aria-label="Close puzzle picker">×</button>
+        <span class="five90-eyebrow">PLAY THE SAME ONE</span>
+        <h2 id="five90PickerTitle">Pick a puzzle number.</h2>
+        <p>Puzzle numbers never change. If you play <strong>#042</strong>, anyone who chooses <strong>#042</strong> gets the exact same answer.</p>
+        <label class="five90-picker-label" for="five90PickerInput">Puzzle 1–${PUZZLES.length}</label>
+        <div class="five90-picker-controls">
+          <input id="five90PickerInput" class="five90-picker-input" type="number" inputmode="numeric" min="1" max="${PUZZLES.length}" step="1" value="1" />
+          <button id="five90PickerGo" class="button primary" type="button">Play Puzzle</button>
+        </div>
+        <div id="five90PickerPreview" class="five90-picker-preview" aria-live="polite"></div>
+        <p class="five90-small">Already played that number? Your saved guesses and result reopen exactly where you left them.</p>
       </div>
     </section>`;
 
@@ -201,7 +225,10 @@ export async function mount({ root, toast, storage }) {
     challengeBtn: root.querySelector('#five90Challenge'), nextBtn: root.querySelector('#five90Next'),
     challengeBanner: root.querySelector('#five90ChallengeBanner'), comparison: root.querySelector('#five90Comparison'),
     modeLine: root.querySelector('#five90ModeLine'), helpBtn: root.querySelector('#five90Help'),
-    helpSheet: root.querySelector('#five90HelpSheet'), helpClose: root.querySelector('#five90HelpClose')
+    helpSheet: root.querySelector('#five90HelpSheet'), helpClose: root.querySelector('#five90HelpClose'),
+    pickPuzzleBtn: root.querySelector('#five90PickPuzzle'), pickerSheet: root.querySelector('#five90PickerSheet'),
+    pickerClose: root.querySelector('#five90PickerClose'), pickerInput: root.querySelector('#five90PickerInput'),
+    pickerGo: root.querySelector('#five90PickerGo'), pickerPreview: root.querySelector('#five90PickerPreview')
   };
 
   let puzzleId = dailyPuzzleId();
@@ -330,6 +357,14 @@ export async function mount({ root, toast, storage }) {
   function submitGuess() {
     if (current.length !== WORD_LEN) { showMessage('Five letters first.'); return; }
     const guess = current.toUpperCase();
+    if (!isValidGuess(guess)) {
+      showMessage('Not in the word list.');
+      const row = els.board.querySelectorAll('.five90-board-row')[state.guesses.length];
+      row?.classList.remove('invalid-word');
+      requestAnimationFrame(() => row?.classList.add('invalid-word'));
+      setTimeout(() => row?.classList.remove('invalid-word'), 380);
+      return;
+    }
     state.guesses.push(guess); current = '';
     const won = guess === puzzle.answer;
     if (won || state.guesses.length >= MAX_GUESSES) state.result = { won, tries: won ? state.guesses.length : 7, finishedAt: Date.now() };
@@ -403,7 +438,7 @@ export async function mount({ root, toast, storage }) {
 Challenge: ${their===7?'X/6':their+'/6'}
 Me: ${myScore}`
       : `90s Five #${String(puzzleId).padStart(3,'0')} — ${myScore}
-Think you can beat it?`;
+Think you can beat it? Pick the same puzzle number and give it a shot.`;
     const text = `${intro}
 
 ${resultGrid()}
@@ -451,7 +486,7 @@ ${challengeUrl()}`;
     if (state.hintShown) {
       els.hintText.textContent = puzzle.clue; els.hintText.classList.remove('hidden'); els.hintBtn.textContent = 'Clue:'; els.hintBtn.disabled = true;
     } else {
-      els.hintText.textContent = ''; els.hintText.classList.add('hidden'); els.hintBtn.textContent = 'Need a clue?'; els.hintBtn.disabled = false;
+      els.hintText.textContent = ''; els.hintText.classList.add('hidden'); els.hintBtn.textContent = 'Need a nudge?'; els.hintBtn.disabled = false;
     }
   }
 
@@ -465,11 +500,55 @@ ${challengeUrl()}`;
     else if (!state.result) showMessage('', 0);
   }
 
-  function openHelp() { els.helpSheet.classList.remove('hidden'); document.body.classList.add('modal-open'); }
+  function pickerValue() {
+    const n = parseInt(els.pickerInput.value || '', 10);
+    return Number.isInteger(n) && n >= 1 && n <= PUZZLES.length ? n : null;
+  }
+
+  function updatePickerPreview() {
+    const n = pickerValue();
+    if (!n) {
+      els.pickerPreview.textContent = `Enter a number from 1 to ${PUZZLES.length}.`;
+      els.pickerGo.disabled = true;
+      return;
+    }
+    els.pickerGo.disabled = false;
+    const picked = PUZZLES[n - 1];
+    const saved = loadState(n);
+    const status = saved.result ? ` · ${saved.result.won ? `${saved.result.tries}/6` : 'X/6'} saved` : saved.guesses.length ? ` · ${saved.guesses.length} guess${saved.guesses.length === 1 ? '' : 'es'} saved` : '';
+    els.pickerPreview.textContent = `#${String(n).padStart(3,'0')} · ${picked.category}${status}`;
+  }
+
+  function openPicker() {
+    closeHelp();
+    els.pickerInput.value = String(puzzleId);
+    updatePickerPreview();
+    els.pickerSheet.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    setTimeout(() => { els.pickerInput.focus({ preventScroll:true }); els.pickerInput.select?.(); }, 60);
+  }
+
+  function closePicker() {
+    els.pickerSheet.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+  }
+
+  function choosePuzzle() {
+    const n = pickerValue();
+    if (!n) { updatePickerPreview(); return; }
+    closePicker();
+    updateRouteForPuzzle(n);
+    parseRoute();
+    renderHeader();
+    render();
+    root.scrollTop = 0;
+  }
+
+  function openHelp() { closePicker(); els.helpSheet.classList.remove('hidden'); document.body.classList.add('modal-open'); }
   function closeHelp() { els.helpSheet.classList.add('hidden'); document.body.classList.remove('modal-open'); }
 
   const onKeydown = event => {
-    if (!els.helpSheet.classList.contains('hidden')) return;
+    if (!els.helpSheet.classList.contains('hidden') || !els.pickerSheet.classList.contains('hidden')) return;
     if (event.key === 'Enter') handleKey('ENTER');
     else if (event.key === 'Backspace') handleKey('BACKSPACE');
     else if (/^[a-zA-Z]$/.test(event.key)) handleKey(event.key.toUpperCase());
@@ -480,6 +559,11 @@ ${challengeUrl()}`;
   els.nextBtn.addEventListener('click', playAnother);
   els.helpBtn.addEventListener('click', openHelp);
   els.helpClose.addEventListener('click', closeHelp);
+  els.pickPuzzleBtn.addEventListener('click', openPicker);
+  els.pickerClose.addEventListener('click', closePicker);
+  els.pickerInput.addEventListener('input', updatePickerPreview);
+  els.pickerInput.addEventListener('keydown', event => { if (event.key === 'Enter') choosePuzzle(); });
+  els.pickerGo.addEventListener('click', choosePuzzle);
   document.addEventListener('keydown', onKeydown);
 
   parseRoute();
@@ -490,7 +574,7 @@ ${challengeUrl()}`;
 
   return {
     cleanup() {
-      clearTimeout(messageTimer); clearRevealTimers(); document.removeEventListener('keydown', onKeydown); closeHelp(); root.classList.remove('five90-active');
+      clearTimeout(messageTimer); clearRevealTimers(); document.removeEventListener('keydown', onKeydown); closeHelp(); closePicker(); root.classList.remove('five90-active');
     },
     replay() { playAnother(); }
   };

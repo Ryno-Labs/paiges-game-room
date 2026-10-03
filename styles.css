@@ -584,10 +584,25 @@ img { -webkit-user-drag: none; user-select: none; }
 .five90-help { width:42px; height:42px; border:2px solid #171717; border-radius:13px; background:#fff9ee; box-shadow:0 3px 0 rgba(23,23,23,.15); font-size:19px; font-weight:1000; }
 .five90-help:active { transform:translateY(2px); box-shadow:none; }
 .five90-challenge { margin:0 0 7px; border:2px solid #171717; border-radius:12px; background:#f4d2dc; padding:8px 10px; text-align:center; font-size:10px; line-height:1.25; font-weight:900; }
-.five90-meta { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:7px; }
-.five90-meta > div { min-height:35px; display:flex; align-items:center; justify-content:space-between; gap:6px; border:1.7px solid #171717; border-radius:10px; background:#fff9ee; padding:6px 8px; }
-.five90-meta small { font-size:7px; letter-spacing:.11em; font-weight:1000; color:#726b73; }
-.five90-meta strong { max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; font-weight:1000; }
+.five90-context { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,.9fr); gap:6px; margin-bottom:7px; }
+.five90-category-banner { min-height:44px; display:flex; flex-direction:column; justify-content:center; border:2px solid #171717; border-radius:10px; background:#f7e5b6; padding:6px 10px; box-shadow:0 2px 0 rgba(23,23,23,.12); }
+.five90-category-banner small { display:block; font-size:7px; line-height:1; letter-spacing:.14em; font-weight:1000; color:#8b3e5e; }
+.five90-category-banner strong { display:block; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:16px; line-height:1; letter-spacing:-.01em; font-weight:1000; text-transform:uppercase; color:#171717; }
+.five90-meta-card { min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:6px; border:1.7px solid #171717; border-radius:10px; background:#fff9ee; padding:6px 8px; color:#171717; font:inherit; }
+.five90-meta-card small { font-size:7px; letter-spacing:.11em; font-weight:1000; color:#726b73; }
+.five90-puzzle-pick { width:100%; text-align:left; box-shadow:0 2px 0 rgba(23,23,23,.1); touch-action:manipulation; }
+.five90-puzzle-pick span { display:flex; align-items:center; justify-content:space-between; gap:8px; flex:1; min-width:0; }
+.five90-puzzle-pick em { flex:0 0 auto; border:1.5px solid #171717; border-radius:999px; background:#f4d2dc; padding:3px 7px; font-size:7px; font-style:normal; font-weight:1000; text-transform:uppercase; letter-spacing:.07em; }
+.five90-puzzle-pick:active { transform:translateY(1px); box-shadow:none; }
+.five90-picker-sheet { align-self:center; }
+.five90-picker-label { display:block; margin:18px 0 6px; font-size:9px; font-weight:1000; letter-spacing:.11em; text-transform:uppercase; color:#756e76; }
+.five90-picker-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:stretch; }
+.five90-picker-input { width:100%; min-width:0; min-height:50px; border:2px solid #171717; border-radius:12px; background:#f6efe4; color:#171717; padding:6px 12px; font-size:24px; line-height:1; font-weight:1000; text-align:center; outline:none; -webkit-appearance:none; appearance:textfield; }
+.five90-picker-input:focus { box-shadow:0 0 0 3px rgba(216,91,120,.2); }
+.five90-picker-controls .button { min-height:50px; padding-inline:16px; white-space:nowrap; }
+.five90-picker-preview { min-height:37px; margin-top:9px; border:1.5px dashed #171717; border-radius:10px; background:#f7e5b6; padding:9px 10px; text-align:center; font-size:10px; line-height:1.3; font-weight:900; }
+
+.five90-meta-card strong { max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; font-weight:1000; }
 .five90-board-wrap { display:flex; justify-content:center; }
 .five90-board { width:min(78vw,300px); aspect-ratio:5/6; display:grid; grid-template-rows:repeat(6,1fr); gap:5px; }
 .five90-board-row { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; min-height:0; }
@@ -624,6 +639,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .five90-example i { width:38px; height:38px; flex:0 0 38px; display:grid; place-items:center; border:2px solid #171717; border-radius:7px; font-style:normal; font-size:19px; font-weight:1000; }
 .five90-small { margin-top:14px !important; font-size:10px !important; color:#756e76 !important; }
 @keyframes five90Pop { from{transform:scale(.9)} to{transform:scale(1)} }
+@keyframes five90Invalid { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+.five90-board-row.invalid-word { animation:five90Invalid .32s ease both; }
 @keyframes five90Flip { 0%{transform:rotateX(0)} 48%{transform:rotateX(88deg)} 52%{transform:rotateX(88deg)} 100%{transform:rotateX(0)} }
 @media (max-width:350px) {
   .five90-screen { padding-inline:9px; }
@@ -637,7 +654,10 @@ img { -webkit-user-drag: none; user-select: none; }
   .five90-brand-row { margin-bottom:4px; }
   .five90-brand-row h1 { font-size:29px; }
   .five90-brand-row p { margin-top:3px; }
-  .five90-meta { margin-bottom:5px; }
+  .five90-context { margin-bottom:5px; }
+  .five90-category-banner { min-height:40px; padding-block:5px; }
+  .five90-category-banner strong { font-size:14px; }
+  .five90-meta-card { min-height:40px; }
   .five90-board { width:min(68vw,252px); gap:4px; }
   .five90-board-row { gap:4px; }
   .five90-message { height:16px; line-height:16px; }
