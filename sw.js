@@ -1,4 +1,4 @@
-const CACHE = 'paige-game-room-six-month-v9-hero4';
+const CACHE = 'paige-game-room-v10-90s-five';
 
 const CORE_SHELL = [
   './',
@@ -7,7 +7,8 @@ const CORE_SHELL = [
   './manifest.webmanifest',
   './js/app.js',
   './js/games/solitaire.js',
-  './js/games/blocks.js'
+  './js/games/blocks.js',
+  './js/games/nineties-five.js'
 ];
 
 const OPTIONAL_ASSETS = [

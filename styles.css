@@ -543,3 +543,108 @@ img { -webkit-user-drag: none; user-select: none; }
   .blocks-tip { display:none; }
   .blocks-board { max-height:calc(100% - 82px); }
 }
+
+/* ---------- 90s Five ---------- */
+.nineties-home-art {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:11px 8px;
+  background:
+    radial-gradient(circle at 18% 18%, #f7d64d 0 5px, transparent 6px),
+    radial-gradient(circle at 83% 26%, #70db8c 0 4px, transparent 5px),
+    linear-gradient(145deg,#f5d9e2 0 48%,#d8d2eb 48% 100%);
+  border-bottom:2px solid #171717;
+  color:#171717;
+  overflow:hidden;
+}
+.nineties-home-art::before,.nineties-home-art::after { content:""; position:absolute; border:2px solid #171717; transform:rotate(16deg); }
+.nineties-home-art::before { width:18px; height:18px; left:12px; bottom:16px; background:#49b879; }
+.nineties-home-art::after { width:12px; height:24px; right:13px; top:17px; background:#f7d64d; transform:rotate(-14deg); }
+.nineties-scribble { font-size:8px; letter-spacing:.18em; font-weight:1000; color:#8b3e5e; }
+.nineties-title { z-index:1; font-size:25px; line-height:.9; font-weight:1000; letter-spacing:-.055em; transform:rotate(-2deg); }
+.nineties-title b { color:#d85b78; -webkit-text-stroke:1px #171717; text-shadow:2px 2px 0 #fff9ee; }
+.nineties-tiles { z-index:1; display:flex; gap:3px; margin-top:3px; }
+.nineties-tiles i { width:21px; height:21px; display:grid; place-items:center; border:1.7px solid #171717; border-radius:4px; background:#fff9ee; font-style:normal; font-size:10px; font-weight:1000; box-shadow:1px 1px 0 #171717; }
+.nineties-tiles i:nth-child(1),.nineties-tiles i:nth-child(4) { background:#78b98b; color:#fff; }
+.nineties-tiles i:nth-child(2) { background:#d3a13c; color:#fff; }
+.nineties-tiles i:nth-child(3),.nineties-tiles i:nth-child(5) { background:#9c9094; color:#fff; }
+.nineties-home-art small { z-index:1; font-size:8px; font-weight:950; letter-spacing:.08em; color:#5e5662; }
+
+.screen.five90-active { overflow-y:auto; overscroll-behavior-y:contain; background:#f6efe4; }
+.five90-screen { min-height:100%; padding:9px 12px max(18px,env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:stretch; color:#171717; }
+.five90-brand-row { display:grid; grid-template-columns:minmax(0,1fr) 44px; gap:8px; align-items:start; margin-bottom:7px; }
+.five90-eyebrow { display:block; font-size:8px; letter-spacing:.17em; font-weight:1000; color:#a94769; margin-bottom:2px; }
+.five90-brand-row h1 { margin:0; font-size:34px; line-height:.88; letter-spacing:-.055em; font-weight:1000; }
+.five90-brand-row h1 b { color:#d85b78; -webkit-text-stroke:1px #171717; text-shadow:2px 2px 0 #fff9ee; }
+.five90-brand-row p { margin:6px 0 0; font-size:10px; line-height:1.2; font-weight:850; color:#6f6a72; }
+.five90-help { width:42px; height:42px; border:2px solid #171717; border-radius:13px; background:#fff9ee; box-shadow:0 3px 0 rgba(23,23,23,.15); font-size:19px; font-weight:1000; }
+.five90-help:active { transform:translateY(2px); box-shadow:none; }
+.five90-challenge { margin:0 0 7px; border:2px solid #171717; border-radius:12px; background:#f4d2dc; padding:8px 10px; text-align:center; font-size:10px; line-height:1.25; font-weight:900; }
+.five90-meta { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:7px; }
+.five90-meta > div { min-height:35px; display:flex; align-items:center; justify-content:space-between; gap:6px; border:1.7px solid #171717; border-radius:10px; background:#fff9ee; padding:6px 8px; }
+.five90-meta small { font-size:7px; letter-spacing:.11em; font-weight:1000; color:#726b73; }
+.five90-meta strong { max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; font-weight:1000; }
+.five90-board-wrap { display:flex; justify-content:center; }
+.five90-board { width:min(78vw,300px); aspect-ratio:5/6; display:grid; grid-template-rows:repeat(6,1fr); gap:5px; }
+.five90-board-row { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; min-height:0; }
+.five90-tile { min-width:0; min-height:0; display:grid; place-items:center; border:2px solid #171717; border-radius:6px; background:rgba(255,249,238,.92); font-size:clamp(20px,6vw,29px); line-height:1; font-weight:1000; text-transform:uppercase; user-select:none; box-shadow:0 2px 0 rgba(23,23,23,.1); }
+.five90-tile.filled { animation:five90Pop .08s ease-out; }
+.five90-tile.exact,.five90-key.exact,.five90-example i.exact { background:#6f9879; color:#fff; }
+.five90-tile.present,.five90-key.present,.five90-example i.present { background:#d39b3c; color:#fff; }
+.five90-tile.absent,.five90-key.absent,.five90-example i.absent { background:#9b8f92; color:#fff; }
+.five90-tile.reveal { animation:five90Flip .38s ease both; }
+.five90-message { height:20px; line-height:20px; margin-top:3px; text-align:center; color:#a94769; font-size:10px; font-weight:1000; }
+.five90-hint-row { min-height:32px; display:flex; align-items:center; justify-content:center; gap:6px; text-align:center; flex-wrap:wrap; }
+.five90-text-button { min-height:32px; border:0; background:transparent; padding:4px 5px; color:#5d5661; text-decoration:underline; text-underline-offset:3px; font-size:10px; font-weight:1000; }
+.five90-text-button:disabled { text-decoration:none; color:#a94769; opacity:1; }
+.five90-hint-text { max-width:320px; font-size:9px; line-height:1.25; font-weight:800; color:#68616a; }
+.five90-keyboard { display:flex; flex-direction:column; gap:5px; width:100%; max-width:440px; margin:2px auto 0; }
+.five90-key-row { display:flex; gap:4px; justify-content:center; }
+.five90-key { min-width:0; height:43px; flex:1; border:1.7px solid #171717; border-radius:8px; background:#fff9ee; padding:0 1px; box-shadow:0 2px 0 rgba(23,23,23,.16); font-size:11px; font-weight:1000; touch-action:manipulation; }
+.five90-key.wide { flex:1.45; font-size:8px; }
+.five90-key:active { transform:translateY(1px); box-shadow:none; }
+.five90-result { margin:12px 0 2px; border:2px solid #171717; border-radius:18px; background:#fff9ee; box-shadow:0 5px 0 rgba(23,23,23,.14); padding:14px; text-align:center; }
+.five90-result > span { display:block; font-size:8px; letter-spacing:.15em; font-weight:1000; color:#746d76; }
+.five90-result > strong { display:block; margin:3px 0; color:#a94769; font-size:45px; line-height:1; font-weight:1000; }
+.five90-result > p { margin:4px 0 10px; font-size:11px; font-weight:900; }
+.five90-comparison { margin:8px 0 10px; border:2px dashed #171717; border-radius:11px; background:#f7e5b6; padding:8px; font-size:10px; font-weight:900; }
+.five90-result-actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.five90-result-actions .button { min-height:44px; padding:7px; font-size:10px; }
+.five90-footnote { margin-top:13px; padding-bottom:3px; text-align:center; color:#7b737b; font-size:7px; font-weight:900; letter-spacing:.05em; text-transform:uppercase; }
+.five90-help-sheet { position:fixed; z-index:120; inset:max(68px,calc(env(safe-area-inset-top) + 58px)) 12px max(14px,env(safe-area-inset-bottom)); max-width:420px; margin:0 auto; overflow:auto; border:2.5px solid #171717; border-radius:22px; background:#fff9ee; box-shadow:0 10px 0 rgba(23,23,23,.18); padding:20px; }
+.five90-help-sheet::before { content:""; position:fixed; z-index:-1; inset:0; background:rgba(23,23,23,.5); }
+.five90-help-close { position:absolute; right:10px; top:10px; width:42px; height:42px; border:2px solid #171717; border-radius:12px; background:#f6efe4; font-size:25px; line-height:1; font-weight:800; }
+.five90-help-sheet h2 { margin:4px 48px 10px 0; font-size:24px; line-height:1; }
+.five90-help-sheet p { font-size:12px; line-height:1.4; font-weight:750; color:#59525d; }
+.five90-example { display:flex; align-items:center; gap:9px; margin:8px 0; font-size:11px; font-weight:850; }
+.five90-example i { width:38px; height:38px; flex:0 0 38px; display:grid; place-items:center; border:2px solid #171717; border-radius:7px; font-style:normal; font-size:19px; font-weight:1000; }
+.five90-small { margin-top:14px !important; font-size:10px !important; color:#756e76 !important; }
+@keyframes five90Pop { from{transform:scale(.9)} to{transform:scale(1)} }
+@keyframes five90Flip { 0%{transform:rotateX(0)} 48%{transform:rotateX(88deg)} 52%{transform:rotateX(88deg)} 100%{transform:rotateX(0)} }
+@media (max-width:350px) {
+  .five90-screen { padding-inline:9px; }
+  .five90-board { width:min(76vw,266px); gap:4px; }
+  .five90-board-row { gap:4px; }
+  .five90-key { height:39px; font-size:10px; }
+  .five90-brand-row h1 { font-size:30px; }
+}
+@media (max-height:700px) {
+  .five90-screen { padding-top:6px; }
+  .five90-brand-row { margin-bottom:4px; }
+  .five90-brand-row h1 { font-size:29px; }
+  .five90-brand-row p { margin-top:3px; }
+  .five90-meta { margin-bottom:5px; }
+  .five90-board { width:min(68vw,252px); gap:4px; }
+  .five90-board-row { gap:4px; }
+  .five90-message { height:16px; line-height:16px; }
+  .five90-hint-row { min-height:25px; }
+  .five90-key { height:37px; }
+  .five90-footnote { display:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .five90-tile,.five90-result { animation:none !important; scroll-behavior:auto !important; }
+}

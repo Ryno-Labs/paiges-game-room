@@ -33,8 +33,15 @@ export const GAME_REGISTRY = [
     module: './games/blocks.js',
     enabled: true
   },
-  { id: 'coming-1', title: 'Next Game', subtitle: 'Add anything Paige gets into next.', enabled: false },
-  { id: 'coming-2', title: 'Next Game', subtitle: 'Another game slot is ready whenever she wants it.', enabled: false }
+  {
+    id: '90sfive',
+    title: '90s Five',
+    subtitle: 'Five letters. Pure 90s. Share your score and challenge someone.',
+    artType: 'nineties',
+    module: './games/nineties-five.js',
+    enabled: true
+  },
+  { id: 'coming-1', title: 'Next Game', subtitle: 'Another game slot is ready whenever she wants it.', enabled: false }
 ];
 
 function escapeHtml(value = '') {
@@ -86,17 +93,33 @@ function setChrome({ title, showBack, showInstall }) {
   installButton.classList.toggle('hidden', !showInstall || isStandalone());
 }
 
+function cleanNinetiesParams(url = new URL(location.href)) {
+  ['p', 's', 't'].forEach(key => url.searchParams.delete(key));
+  return url;
+}
+
+function setGameRoute(id) {
+  const url = new URL(location.href);
+  if (id !== '90sfive') cleanNinetiesParams(url);
+  url.hash = id;
+  history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
 function renderHome() {
   cleanupCurrent();
   closeCelebration();
-  history.replaceState(null, '', '#home');
+  {
+    const url = cleanNinetiesParams(new URL(location.href));
+    url.hash = 'home';
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
   setChrome({ title: "Paige's Game Room", showBack: false, showInstall: true });
   screen.scrollTop = 0;
   screen.innerHTML = `
     <section class="home-hero" aria-label="Paige's Game Room">
       <div class="home-hero-copy">
         <span class="section-kicker">PAIGE'S PRIVATE ARCADE</span>
-        <p>Two games now. Zero ads forever. More whenever you get bored.</p>
+        <p>Three games now. Zero ads forever. More whenever you get bored.</p>
       </div>
     </section>
     <section class="home-section">
@@ -110,6 +133,12 @@ function renderHome() {
                 <span class="mini-blocks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
                 <strong>BLOCKS</strong>
                 <small>Journey · Endless</small>
+              </span>` : game.artType === 'nineties' ? `
+              <span class="game-art nineties-home-art" aria-hidden="true">
+                <span class="nineties-scribble">PAIGE'S</span>
+                <span class="nineties-title"><b>90s</b> FIVE</span>
+                <span class="nineties-tiles"><i>S</i><i>A</i><i>V</i><i>E</i><i>D</i></span>
+                <small>Daily · Challenge</small>
               </span>` : `<img class="game-art" src="${game.art}" alt="" draggable="false" />`}
             <span class="game-card-body">
               <span role="heading" aria-level="2" class="game-card-heading">${escapeHtml(game.title)}</span>
@@ -142,7 +171,7 @@ async function openGame(id) {
   cleanupCurrent();
   closeCelebration();
   currentGameId = id;
-  history.replaceState(null, '', `#${id}`);
+  setGameRoute(id);
   setChrome({ title: game.title, showBack: true, showInstall: false });
   screen.scrollTop = 0;
   screen.innerHTML = '<div style="padding:32px 18px;text-align:center;font-weight:900">Loading…</div>';
